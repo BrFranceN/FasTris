@@ -9,8 +9,16 @@ import { AmbientLight, DirectionalLight } from 'three'
 import MainCharacter from './src/MainCharacter';
 import { update } from 'three/examples/jsm/libs/tween.module.js';
 import SpecialObject from './src/SpecialObject';
+// import { GUI } from 'dat.gui'
 // import MainCharacter from './src/MainCharacter'; // per ora non funziona
 
+
+//MAP
+// 0 -> empty cell
+// 1 -> special object cell
+// 2 -> tris empty cell
+// 3 -> tris X cell
+// 4 -> tris O cell
 
 //PARAMETERS 
 const sizes = {
@@ -33,11 +41,17 @@ const grid_size = {
 	y: 10,
 };
 
-let info_grid = createInfo(grid_size.x, grid_size.y);
+const tris_array = [34,35,36,
+					44,45,46,
+					54,55,56];
+
+
+let info_grid = createInfo(grid_size.x, grid_size.y,tris_array);
 console.log(info_grid);
 
 //Where tris is positioned 
-const tris_array = [34,35,36,44,45,46,54,55,56];
+
+
 
 const dim_character = 1;
 
@@ -152,19 +166,10 @@ requestAnimationFrame(tic)
 
 
 
-
-// Move block
-// window.addEventListener('click',function(){
-// 	
-// 	console.log("running ? : ", isRunning);
-// })
-
 // PHASE GAME
 let isRunning = false;
 window.addEventListener('keyup',function(e){
 	loader.setDirection(e.code);
-
-
 
 	if(e.code == 'KeyG'){
 		if (!isRunning){
@@ -178,7 +183,41 @@ window.addEventListener('keyup',function(e){
 			console.log('Gioco fermo!:',isRunning);
 		}
 	}
-	
+
+	else if(e.code == 'Space' && isRunning){
+		const character_ind = loader.getInteralIndex();		
+		const tris_found_index = tris_array.findIndex(tris_index => tris_index == character_ind);
+		if (tris_found_index >=0){
+			const cell_index = tris_array[tris_found_index];
+
+			const cell_tris_state = info_grid[cell_index];
+
+			//You done the move
+			if (cell_tris_state == 2){
+				info_grid[cell_index] = 3;
+			}
+
+			//Now Your opponent done the move
+			opponent_action();
+
+
+			//Check win condition!
+			let visualize = visualize_tris();
+
+			// console.log("info attivo?",info_grid);
+			console.log("info attivo?",visualize);
+
+			let winner = checkWin(visualize);
+			if (winner) {
+				console.log(`The winner is: ${winner}`);
+			} else {
+				console.log('No winner yet.');
+			}
+		}
+	}
+
+
+
 })
 
 
@@ -187,22 +226,22 @@ function start_game(){
 	if(!isRunning){ //if the game is not already started
 		isRunning = setInterval( () => {
 			loader.updatePosition(grid_size);
+			loader.addEventListener('updated', () => {
+				const character_ind = loader.getInteralIndex();
+				//SPECIAL OBJECT DETECTION
+				const so_found_index = special_objects.findIndex(element => element.getCellIndex() == character_ind);
+				if (so_found_index >=0){
+					const cell_index = special_objects[so_found_index].getCellIndex();
+					
+					//TODO GESTIRE GLI EFFETTI DEGLI SPECIAL OBJECT
+					
+					info_grid[cell_index] = 0;
+					console.log("array of so",special_objects);
+					console.log("remove a special object from scene");
+					scene.remove(special_objects[so_found_index].mesh);
+					special_objects.splice(so_found_index,1);
+				}
 		});
-		loader.addEventListener('updated', () => {
-			const character_ind = loader.getInteralIndex();
-			//special object detection
-			const so_found_index = special_objects.findIndex(element => element.getCellIndex() == character_ind);
-			console.log(so_found_index);
-			if (so_found_index >=0){
-				const cell_index = special_objects[so_found_index].getCellIndex();
-
-				//TODO GESTIRE GLI EFFETTI DEGLI SPECIAL OBJECT
-				info_grid[cell_index] = 0;
-				console.log("array of so",special_objects);
-				console.log("remove a special object from scene");
-				scene.remove(special_objects[so_found_index].mesh);
-				special_objects.splice(so_found_index,1);
-			}
 			add_special_object(grid_size,loader);
 		},400)
 	}
@@ -231,7 +270,7 @@ function add_special_object(grid_size,loader){
 				random_index = Math.floor(Math.random() * grid_size.x *grid_size.y);
 				collision = loader.check_collision(random_index);
 				console.log("collision:", collision);
-			}while(loader.check_collision(random_index) || info_grid[random_index]==1);
+			}while(loader.check_collision(random_index) || info_grid[random_index]!=0);
 			
 			//I want generate an object in a cell != character cell
 			const special_object = new SpecialObject(random_index);
@@ -308,11 +347,16 @@ function getCoordByIndex(index,grid_size){
 
 
 
-function createInfo(x, y) {
+function createInfo(x, y,tris_info) {
     const totalElements = x * y;
     const dictionary = {};
     for (let i = 0; i < totalElements; i++) {
-        dictionary[i] = 0;
+		if (tris_info.includes(i)){
+			dictionary[i] = 2;
+		}
+		else{
+			dictionary[i] = 0;
+		}
     }
     return dictionary;
 }
@@ -330,12 +374,98 @@ function countObjectType(dictionary,type){
 
 
 
-//Remove an object
-// function removeEntity(object) {
-//     var selectedObject = scene.getObjectByName(object.name);
-//     scene.remove( selectedObject );
-//     animate();
+//OPPONENT LOGIC 
+function opponent_action() {
+    const available_cell = tris_available_cells();
+    
+    //Logic of chosen cell (easy mod: random)
+    const choosen_index = available_cell[Math.floor(Math.random() * available_cell.length)];
+    
+    if (choosen_index !== undefined) {
+        info_grid[choosen_index] = 4;
+	}
+}
+
+function tris_available_cells() {
+    let available = [];
+    tris_array.forEach(function(value) {
+        if (info_grid[value] == 2) {
+            available.push(value);
+        }
+    });
+    return available;
+}
+
+function visualize_tris(){
+	let visualize = [
+		[info_grid[tris_array[0]],info_grid[tris_array[1]], info_grid[tris_array[2]]],
+		[info_grid[tris_array[3]],info_grid[tris_array[4]], info_grid[tris_array[5]]],
+		[info_grid[tris_array[6]],info_grid[tris_array[7]], info_grid[tris_array[8]]]
+	];
+
+    for (let i = 0; i < visualize.length; i++) {
+        for (let j = 0; j < visualize[i].length; j++) {
+            if (visualize[i][j] == 2) {
+                visualize[i][j] = ' ';
+            } else if (visualize[i][j] == 3) {
+                visualize[i][j] = 'X';
+            } else if (visualize[i][j] == 4) {
+                visualize[i][j] = 'O';
+            }
+        }
+    }
+
+    return visualize;
+}
+
+function checkWin(visualize) {
+    // Check rows
+    for (let i = 0; i < 3; i++) {
+        if (visualize[i][0] === visualize[i][1] && visualize[i][1] === visualize[i][2] && visualize[i][0] !== ' ') {
+            return visualize[i][0]; // Return 'X' or 'O'
+        }
+    }
+
+    // Check columns
+    for (let i = 0; i < 3; i++) {
+        if (visualize[0][i] === visualize[1][i] && visualize[1][i] === visualize[2][i] && visualize[0][i] !== ' ') {
+            return visualize[0][i]; // Return 'X' or 'O'
+        }
+    }
+
+    // Check diagonals
+    if (visualize[0][0] === visualize[1][1] && visualize[1][1] === visualize[2][2] && visualize[0][0] !== ' ') {
+        return visualize[0][0]; // Return 'X' or 'O'
+    }
+    if (visualize[0][2] === visualize[1][1] && visualize[1][1] === visualize[2][0] && visualize[0][2] !== ' ') {
+        return visualize[0][2]; // Return 'X' or 'O'
+    }
+
+    // No winner
+    return null;
+}
+
+
+
+
+//TEST GUI
+// let guiControls = new function(){
+// 	mesh.position.x += 0.01;
+// 	mesh.position.y += 0.01;
+// 	mesh.position.z += 0.01;
 // }
+// let datGUI = new GUI();
+// datGUI.add(guiControls,'mesh.position.x',0,1);
+// datGUI.add(guiControls,'mesh.position.y',0,1);
+// datGUI.add(guiControls,'mesh.position.z',0,1);
+
+
+
+
+
+
+
+//LOGIC OF TRIS 
 
 
 

@@ -5,8 +5,8 @@ import {EventDispatcher, Vector3} from 'three';
 // TODO: FIX CORRECT DIRECTIONS
 const UP = new Vector3(0,0,-1);
 const DOWN = new Vector3(0,0,1);
-const RIGHT = new Vector3(-1,0,0);
-const LEFT = new Vector3(1,0,0);
+const RIGHT = new Vector3(1,0,0);
+const LEFT = new Vector3(-1,0,0);
 
 
 export default class MainCharacter extends EventDispatcher {
@@ -49,7 +49,6 @@ export default class MainCharacter extends EventDispatcher {
     }
 
     updatePosition(grid_size){
-
         //check collision before update
         //says also if is in a cell where there is 
         this.model.position.add(this.direction);
@@ -67,7 +66,6 @@ export default class MainCharacter extends EventDispatcher {
         else if (this.model.position.x > grid_size.x - 1 ){
         this.model.position.x = 0;
         }
-
         super.dispatchEvent({type:'updated'});
     }
 

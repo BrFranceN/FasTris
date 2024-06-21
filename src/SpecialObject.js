@@ -5,8 +5,15 @@ const material = new MeshNormalMaterial();
 
 export default class SpecialObject{
 
-    constructor(){
+    internal_index;
+    constructor(internal_index){
         this.mesh = new Mesh(geometry,material);
+        this.internal_index = internal_index;
+        // this.internal_index = internal_index;
+    }
+
+    getCellIndex(){
+        return this.internal_index;
     }
 
 }

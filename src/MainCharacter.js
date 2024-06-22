@@ -3,18 +3,22 @@ import {EventDispatcher, Vector3} from 'three';
 
 
 // TODO: FIX CORRECT DIRECTIONS
-const UP = new Vector3(0,0,-1);
-const DOWN = new Vector3(0,0,1);
-const RIGHT = new Vector3(1,0,0);
-const LEFT = new Vector3(-1,0,0);
+const original_UP = new Vector3(0,0,-1);
+const original_DOWN = new Vector3(0,0,1);
+const original_RIGHT = new Vector3(1,0,0);
+const original_LEFT = new Vector3(-1,0,0);
 
 
 export default class MainCharacter extends EventDispatcher {
 
     //Parameters
+    UP = new Vector3(0,0,-1);
+    DOWN = new Vector3(0,0,1);
+    RIGHT = new Vector3(1,0,0);
+    LEFT = new Vector3(-1,0,0);
     
 
-    direction =  UP;
+    direction =  this.UP;
     special_objects = [];
         
 
@@ -54,6 +58,11 @@ export default class MainCharacter extends EventDispatcher {
         this.model.position.add(this.direction);
         this.internal_index = this.getIndexByCoord();
 
+        // let left_arm = this.model.getObjectByName("mixamorig:LeftUpLeg_047");
+        // console.log("model ->",this.model);
+        // console.log("left arm =",left_arm);
+        // this.animateArms(left_arm);
+
         if (this.model.position.z < 0){
         this.model.position.z = grid_size.y - 1;
         }
@@ -77,19 +86,19 @@ export default class MainCharacter extends EventDispatcher {
         switch (keyCode) {
             case 'ArrowUp':
             case 'KeyW':
-                this.direction = UP
+                this.direction = this.UP;
                 break
             case 'ArrowDown':
             case 'KeyS':
-                this.direction = DOWN
+                this.direction = this.DOWN;
                 break
             case 'ArrowLeft':
             case 'KeyA':
-                this.direction = LEFT
+                this.direction = this.LEFT;
                 break
             case 'ArrowRight':
             case 'KeyD':
-                this.direction = RIGHT
+                this.direction = this.RIGHT;
                 break
             default:
                 return
@@ -107,6 +116,14 @@ export default class MainCharacter extends EventDispatcher {
     }
 
 
+    modify_control(){
+        this.UP = new Vector3(0,0,-2);
+        this.DOWN = new Vector3(0,0,2);
+        this.RIGHT = new Vector3(2,0,0);
+        this.LEFT = new Vector3(-2,0,0);
+    }
+
+
  
 
     check_collision(check_index){
@@ -117,6 +134,45 @@ export default class MainCharacter extends EventDispatcher {
         else{
             return false;
         }
+    }
+
+    animateArms(leftArm) {
+
+        // if (!leftArm || !rightArm) {
+        //         console.error('Arm bones not found!');
+        //         return;
+        // }
+    
+        const initialRotationLeft = { x: leftArm.rotation.x, y: leftArm.rotation.y, z: leftArm.rotation.z };
+        const targetRotationLeft = { x: Math.PI / 4, y: leftArm.rotation.y, z: leftArm.rotation.z };
+    
+        // const initialRotationRight = { x: rightArm.rotation.x, y: rightArm.rotation.y, z: rightArm.rotation.z };
+        // const targetRotationRight = { x: -Math.PI / 4, y: rightArm.rotation.y, z: rightArm.rotation.z };
+    
+        const leftArmTween = new TWEEN.Tween(initialRotationLeft)
+                .to(targetRotationLeft, 1000)
+                .easing(TWEEN.Easing.Quadratic.InOut)
+                .onUpdate(() => {
+                        leftArm.rotation.x = initialRotationLeft.x;
+                        leftArm.rotation.y = initialRotationLeft.y;
+                        leftArm.rotation.z = initialRotationLeft.z;
+                })
+                .yoyo(true)
+                .repeat(Infinity);
+    
+        // const rightArmTween = new TWEEN.Tween(initialRotationRight)
+        //         .to(targetRotationRight, 1000)
+        //         .easing(TWEEN.Easing.Quadratic.InOut)
+        //         .onUpdate(() => {
+        //                 rightArm.rotation.x = initialRotationRight.x;
+        //                 rightArm.rotation.y = initialRotationRight.y;
+        //                 rightArm.rotation.z = initialRotationRight.z;
+        //         })
+        //         .yoyo(true)
+        //         .repeat(Infinity);
+    
+        leftArmTween.start();
+        // rightArmTween.start();
     }
 
 

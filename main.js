@@ -3,12 +3,14 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import {Mesh, MeshNormalMaterial, Vector3} from 'three'; //controlla se poi li usi
+import TWEEN from '@tweenjs/tween.js';
 
 // import * as dat from 'lil-gui'
 import { AmbientLight, DirectionalLight } from 'three'
 import MainCharacter from './src/MainCharacter';
 import { update } from 'three/examples/jsm/libs/tween.module.js';
 import SpecialObject from './src/SpecialObject';
+import { mx_bits_to_01 } from 'three/examples/jsm/nodes/materialx/lib/mx_noise.js';
 // import { GUI } from 'dat.gui'
 // import MainCharacter from './src/MainCharacter'; // per ora non funziona
 
@@ -50,34 +52,85 @@ let info_grid = createInfo(grid_size.x, grid_size.y,tris_array);
 console.log(info_grid);
 
 //Where tris is positioned 
-
-
-
 const dim_character = 1;
 
 //DEBUG
 // const gui = new dat.GUI()
 
+
+// DEFINE SHAPE X AND O
+
+// Define an O shape 
+const innerRadius = 0.5;
+const outerRadius = 1;
+const segments = 32;
+const geometry_o = new THREE.RingGeometry(innerRadius, outerRadius, segments);
+
+// Create a material
+const material_o = new THREE.MeshBasicMaterial({ color: 0xbd3335, side: THREE.DoubleSide });
+
+// Create the mesh
+const mesh_o = new THREE.Mesh(geometry_o, material_o);
+mesh_o.rotation.x+=Math.PI/2;	
+mesh_o.scale.set(0.5,0.5,0.5);
+
+
+// Define the shape of an "X"
+const createXShape = () => {
+    const xGroup = new THREE.Group();
+
+    const geometry = new THREE.BoxGeometry(0.2, 2, 0.2);
+    const material = new THREE.MeshBasicMaterial({ color: 0x3351bd });
+
+    const bar1 = new THREE.Mesh(geometry, material);
+    bar1.rotation.z = Math.PI / 4;
+
+    const bar2 = new THREE.Mesh(geometry, material);
+    bar2.rotation.z = -Math.PI / 4;
+
+    xGroup.add(bar1);
+    xGroup.add(bar2);
+
+    return xGroup;
+};
+
+// Create the "X" shape
+const mesh_x = createXShape();
+
+// Scale the X shape (2 times larger in all dimensions)
+mesh_x.rotation.x += Math.PI/2;
+mesh_x.scale.set(0.5, 0.5, 0.5);
+
+// Add the "X" shape to the scene
 //SCENE
 const scene = new THREE.Scene()
 scene.background = new THREE.Color('black')
 // scene.background = new THREE.Color(0x000000)
 
 
+// scene.add(mesh_o);
+// scene.add(mesh_x);
 
-
-
-//BOX
+//BOXES
 // const material = new THREE.MeshNormalMaterial()
 const material = new THREE.MeshStandardMaterial({ color: 'coral', wireframe:false });
 const geometry = new THREE.BoxGeometry(dim_character, dim_character, dim_character);
-const mesh = new THREE.Mesh(geometry, material);
-mesh.position.y += 0.5;
-scene.add(mesh); 
+const mesh1 = new THREE.Mesh(geometry, material);
+const mesh2 = new THREE.Mesh(geometry, material);
+const mesh3 = new THREE.Mesh(geometry, material);
+const mesh4 = new THREE.Mesh(geometry, material);
+mesh1.position.set(-2, 0, -2);
+mesh2.position.set(10, 0, 10);
+mesh3.position.set(-1, 0, 10 );
+mesh4.position.set(10, 0,-1 );
+scene.add(mesh1);	
+scene.add(mesh2);
+scene.add(mesh3);
+scene.add(mesh4);
 
 
 //PLANE
-const planeMaterial = new THREE.MeshStandardMaterial({ color: 'lightgray', wireframe:true});
+const planeMaterial = new THREE.MeshStandardMaterial({ color: 0xff7438, wireframe:true});
 // to create a  x columns 
 const planeGeometry = new THREE.PlaneGeometry(grid_size.x, grid_size.y,grid_size.x,grid_size.y);
 planeGeometry.rotateX(-Math.PI * 0.5); //because is vertical originally
@@ -101,8 +154,8 @@ const check_model_loaded = setInterval(() => {
 
 //actual direction of character
 // let direction = RIGHT;
-mesh.position.x = grid_size.x / 2 ;
-mesh.position.z = grid_size.y / 2 ;
+// mesh.position.x = grid_size.x / 2 ;
+// mesh.position.z = grid_size.y / 2 ;
 
 
 
@@ -152,8 +205,13 @@ function tic() {
 	// const deltaTime = clock.getDelta() // tempo trascorso dal frame precedente
 
 	// const time = clock.getElapsedTime() //tempo totale trascorso dall'inizio
-
+	TWEEN.update();
 	controls.update()
+
+	mesh1.rotation.y +=0.1;
+	mesh2.rotation.y +=0.1;
+	mesh3.rotation.y +=0.1;
+	mesh4.rotation.y +=0.1;
 
 	renderer.render(scene, camera)
 
@@ -197,14 +255,19 @@ window.addEventListener('keyup',function(e){
 				info_grid[cell_index] = 3;
 			}
 
+			let visualize = visualize_tris();
+			//FORSE QUI POSSO GESTIRE LA SCELTA DI X oppure O da parte del player
+			update_visual_tris(visualize,mesh_x,mesh_o);
+			
 			//Now Your opponent done the move
 			opponent_action();
-
+			
+			visualize = visualize_tris();
+			update_visual_tris(visualize,mesh_x,mesh_o);
 
 			//Check win condition!
-			let visualize = visualize_tris();
 
-			// console.log("info attivo?",info_grid);
+			console.log("info attivo?",info_grid);
 			console.log("info attivo?",visualize);
 
 			let winner = checkWin(visualize);
@@ -234,6 +297,7 @@ function start_game(){
 					const cell_index = special_objects[so_found_index].getCellIndex();
 					
 					//TODO GESTIRE GLI EFFETTI DEGLI SPECIAL OBJECT
+					// loader.modify_control();
 					
 					info_grid[cell_index] = 0;
 					console.log("array of so",special_objects);
@@ -444,6 +508,68 @@ function checkWin(visualize) {
     // No winner
     return null;
 }
+
+// function update_visual_tris(visualize,mesh_x_original,mesh_o_original){	
+// 	const mesh_x = mesh_x_original.clone();
+// 	const mesh_o = mesh_o_original.clone();
+
+
+// 	let index_init = 0;
+
+// 	for (let i = 0; i < visualize.length; i++) {
+//         for (let j = 0; j < visualize[i].length; j++) {
+// 			if (visualize[i][j] == 'X') {
+// 				const index_cell_x = tris_array[index_init + j];
+// 				const [x_x,z_x] = getCoordByIndex(index_cell_x,grid_size);
+// 				console.log("info X",[x_x,z_x]);
+// 				mesh_x.position.set(x_x,0,z_x);
+// 				scene.add(mesh_x);
+//             } else if (visualize[i][j] == 'O') {
+// 				visualize[i][j] = 'O';
+// 				const index_cell_o = tris_array[index_init + j];
+// 				const [x_o,z_o] = getCoordByIndex(index_cell_o,grid_size);
+// 				console.log("info O",[x_o,z_o]);
+// 				mesh_o.position.set(x_o,0,z_o);
+// 				scene.add(mesh_o);
+//             }
+// 		}
+// 		index_init += 3;
+//     }
+// }
+
+function update_visual_tris(visualize, mesh_x_original, mesh_o_original) {	
+    const addedMeshes = {}; // To keep track of added meshes
+
+    let index_init = 0;
+
+    for (let i = 0; i < visualize.length; i++) {
+        for (let j = 0; j < visualize[i].length; j++) {
+            const index = index_init + j;
+            const cellValue = visualize[i][j];
+            const index_cell = tris_array[index];
+            const [x, z] = getCoordByIndex(index_cell, grid_size);
+
+            if (cellValue === 'X' && !addedMeshes[`X_${index_cell}`]) {
+                const mesh_x = mesh_x_original.clone();
+                mesh_x.position.set(x, 0, z);
+                mesh_x.name = `X_${index_cell}`;
+                scene.add(mesh_x);
+                addedMeshes[`X_${index_cell}`] = mesh_x;
+                console.log("Added X at position:", [x, z]);
+
+            } else if (cellValue === 'O' && !addedMeshes[`O_${index_cell}`]) {
+                const mesh_o = mesh_o_original.clone();
+                mesh_o.position.set(x, 0, z);
+                mesh_o.name = `O_${index_cell}`;
+                scene.add(mesh_o);
+                addedMeshes[`O_${index_cell}`] = mesh_o;
+                console.log("Added O at position:", [x, z]);
+            }
+        }
+        index_init += 3;
+    }
+}
+
 
 
 

@@ -1,1 +1,2 @@
 npm install dat.gui --save-dev
+npm install @tweenjs/tween.js

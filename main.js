@@ -12,8 +12,6 @@ import { update } from 'three/examples/jsm/libs/tween.module.js';
 import SpecialObject from './src/SpecialObject';
 import { mx_bits_to_01 } from 'three/examples/jsm/nodes/materialx/lib/mx_noise.js';
 // import { GUI } from 'dat.gui'
-// import MainCharacter from './src/MainCharacter'; // per ora non funziona
-
 
 //MAP
 // 0 -> empty cell
@@ -28,6 +26,7 @@ const sizes = {
 	height: window.innerHeight,
 };
 
+const player_choice = 0;
 const limit_special_object = 5;
 let special_objects = [];
 
@@ -119,7 +118,7 @@ const mesh1 = new THREE.Mesh(geometry, material);
 const mesh2 = new THREE.Mesh(geometry, material);
 const mesh3 = new THREE.Mesh(geometry, material);
 const mesh4 = new THREE.Mesh(geometry, material);
-mesh1.position.set(-2, 0, -2);
+mesh1.position.set(-1, 0, -1);
 mesh2.position.set(10, 0, 10);
 mesh3.position.set(-1, 0, 10 );
 mesh4.position.set(10, 0,-1 );
@@ -140,6 +139,9 @@ plane.position.x = grid_size.x / 2  - (dim_character/2);
 plane.position.z = grid_size.y / 2 - (dim_character/2);  
 scene.add(plane);
 
+
+
+//PLANES TRIS ZONE
 
 const model_path = '3d_models/tyrone_mixamo/scene.gltf';
 const loader = new MainCharacter(model_path,grid_size,initial_position);
@@ -249,18 +251,32 @@ window.addEventListener('keyup',function(e){
 			const cell_index = tris_array[tris_found_index];
 
 			const cell_tris_state = info_grid[cell_index];
-
-			//You done the move
+			let move_done = false;
+			console.log("cell_tris_state",cell_tris_state);
+			console.log("cell_index",cell_index);
+			//You done the move)
 			if (cell_tris_state == 2){
-				info_grid[cell_index] = 3;
-			}
 
+				if (player_choice == 0){
+					info_grid[cell_index] = 3;
+				}else{
+					info_grid[cell_index] = 4;
+				}
+				move_done = true;
+			}
+			
 			let visualize = visualize_tris();
+			let winner = checkWin(visualize);
+
+
 			//FORSE QUI POSSO GESTIRE LA SCELTA DI X oppure O da parte del player
+			// nel caso il player scelga X basta rimanerlo uguale
 			update_visual_tris(visualize,mesh_x,mesh_o);
 			
 			//Now Your opponent done the move
-			opponent_action();
+			if (move_done){
+				opponent_action();
+			}
 			
 			visualize = visualize_tris();
 			update_visual_tris(visualize,mesh_x,mesh_o);
@@ -270,7 +286,6 @@ window.addEventListener('keyup',function(e){
 			console.log("info attivo?",info_grid);
 			console.log("info attivo?",visualize);
 
-			let winner = checkWin(visualize);
 			if (winner) {
 				console.log(`The winner is: ${winner}`);
 			} else {
@@ -313,6 +328,7 @@ function start_game(){
 
 
 function stop_game(){
+	// Magari qui mostrare la scritta vittoria?
 	clearInterval(isRunning);
 }
 
@@ -446,7 +462,11 @@ function opponent_action() {
     const choosen_index = available_cell[Math.floor(Math.random() * available_cell.length)];
     
     if (choosen_index !== undefined) {
-        info_grid[choosen_index] = 4;
+		if (player_choice == 0){
+			info_grid[choosen_index] = 4;
+		}else{
+			info_grid[choosen_index] = 3;
+		}
 	}
 }
 
@@ -568,6 +588,15 @@ function update_visual_tris(visualize, mesh_x_original, mesh_o_original) {
         }
         index_init += 3;
     }
+}
+
+
+function addSquare(x, z) {
+    const square = new THREE.Mesh(squareGeometry, squareMaterial);
+    square.rotation.x = -Math.PI / 2; // Rotate to lay flat
+    square.position.set(x, 0.01, z); // Slightly above the ground to avoid z-fighting
+    scene.add(square);
+    return square;
 }
 
 

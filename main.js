@@ -26,11 +26,29 @@ const sizes = {
 	height: window.innerHeight,
 };
 
+let salire = true;
+let salire_b = true;
+
+
+//Special effects params
+let special_effect = false;
+let time_special = -1;
+const n_effect = 3;
+const duration_effect = 30;
+
+//effect 1 -> jump of 2 cell
+//effect 2 -> super speed
+//effect 3 -> random control
+//effect 4 -> teleporter
+
+
 let interval;
 let isRunning=false;
 
 // time of one effect
-const effect_time = -1;
+const effect_time = 10;
+
+//score of the game
 const score = 0;
 const time = 0;
 
@@ -122,14 +140,14 @@ scene.background = new THREE.Color('black')
 
 //BOXES
 // const material = new THREE.MeshNormalMaterial()
-const material = new THREE.MeshStandardMaterial({ color: 'coral', wireframe:false });
+const material = new THREE.MeshStandardMaterial({ color: 0x0047ed, wireframe:false });
 const geometry = new THREE.BoxGeometry(dim_character, dim_character, dim_character);
 const mesh1 = new THREE.Mesh(geometry, material);
 const mesh2 = new THREE.Mesh(geometry, material);
 const mesh3 = new THREE.Mesh(geometry, material);
 const mesh4 = new THREE.Mesh(geometry, material);
-mesh1.position.set(-1, 0, -1);
-mesh2.position.set(10, 0, 10);
+mesh1.position.set(-1, 3, -1);
+mesh2.position.set(10, 3, 10);
 mesh3.position.set(-1, 0, 10 );
 mesh4.position.set(10, 0,-1 );
 scene.add(mesh1);	
@@ -139,7 +157,7 @@ scene.add(mesh4);
 
 
 //PLANE
-const planeMaterial = new THREE.MeshStandardMaterial({ color: 0xff7438, wireframe:true});
+const planeMaterial = new THREE.MeshStandardMaterial({ color: "black", wireframe:true});
 // to create a  x columns 
 const planeGeometry = new THREE.PlaneGeometry(grid_size.x, grid_size.y,grid_size.x,grid_size.y);
 planeGeometry.rotateX(-Math.PI * 0.5); //because is vertical originally
@@ -177,13 +195,8 @@ const check_model_loaded = setInterval(() => {
 // mesh.position.z = grid_size.y / 2 ;
 
 
-
-
-
-
-
 //Camera
-const fov = 60
+const fov = 60;
 const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1)
 // camera.position.set(4, 4, 4);
 camera.position.set(grid_size.x/2 + 2, 10 ,grid_size.y/2 + 2);
@@ -227,10 +240,44 @@ function tic() {
 	TWEEN.update();
 	controls.update()
 
-	mesh1.rotation.y +=0.1;
-	mesh2.rotation.y +=0.1;
-	mesh3.rotation.y +=0.1;
-	mesh4.rotation.y +=0.1;
+	
+
+	mesh1.rotation.x +=0.1;
+	mesh2.rotation.x +=0.1;
+	mesh3.rotation.x +=0.1;
+	mesh4.rotation.x +=0.1;
+
+	// modify position of balls
+
+	
+	
+	for (let i=0; i<special_objects.length; i++){
+
+		special_objects[i].mesh.rotation.y+=0.1;
+
+	}
+	
+	
+	if (salire){
+		mesh1.position.y-=0.03;
+		mesh2.position.y-=0.03;
+		mesh3.position.y+=0.03;
+		mesh4.position.y+=0.03;
+		if (mesh3.position.y > 3){
+			salire = false;
+		}
+	}else{
+		mesh1.position.y+=0.03;
+		mesh2.position.y+=0.03;
+		mesh3.position.y-=0.03;
+		mesh4.position.y-=0.03;
+		if (mesh3.position.y <= 0){
+			salire = true;
+		}
+	}
+
+	
+
 
 	renderer.render(scene, camera)
 
@@ -323,6 +370,7 @@ function start_game(){
 		interval = setInterval( () => {
 			loader.updatePosition(grid_size);
 			loader.addEventListener('updated', () => {
+
 				const character_ind = loader.getInteralIndex();
 				//SPECIAL OBJECT DETECTION
 				const so_found_index = special_objects.findIndex(element => element.getCellIndex() == character_ind);
@@ -330,7 +378,28 @@ function start_game(){
 					const cell_index = special_objects[so_found_index].getCellIndex();
 					
 					//TODO GESTIRE GLI EFFETTI DEGLI SPECIAL OBJECT
-					// loader.modify_control();
+					let index_effect = Math.floor(Math.random * n_effect); 
+					special_effect = loader.getStateEffect();
+				
+					index_effect = 0;
+					// Controllo se non c'e' gia' un effetto settato!
+					if (special_effect==-1){
+						special_effect = index_effect;
+						if (index_effect == 0){
+							console.log("attivazione effetto 1");
+							loader.skipControl();
+							loader.setStateEffect(special_effect);
+						}else if (index_effect == 1){
+							console.log("attivazione effetto 2");
+							loader.model.position.set
+						}else if (index_effect == 2){
+							console.log("attivazione effetto 3");
+							time_special = 11;
+						}else if (index_effect == 3){
+							console.log("attivazione effetto 4");
+							time_special = 11;
+						}
+					}
 					
 					info_grid[cell_index] = 0;
 					console.log("array of so",special_objects);
@@ -338,6 +407,20 @@ function start_game(){
 					scene.remove(special_objects[so_found_index].mesh);
 					special_objects.splice(so_found_index,1);
 				}
+
+				//check if deactivate or not special effect
+				// check the timer of loader
+				// console.log("come mai non va!",special_effect);
+				// if (special_effect != -1){
+				// 	if (loader.getTimer() > 0){
+				// 		console.log("time remains special effect",loader.getTimer());
+				// 		loader.resetEffect(special_effect);
+				// 	}else{
+				// 		console.log("Time out!!!")
+				// 	}
+				// }
+
+
 		});
 			add_special_object(grid_size,loader);
 		},400)

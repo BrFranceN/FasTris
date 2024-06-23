@@ -26,6 +26,14 @@ const sizes = {
 	height: window.innerHeight,
 };
 
+let interval;
+let isRunning=false;
+
+// time of one effect
+const effect_time = -1;
+const score = 0;
+const time = 0;
+
 const player_choice = 0;
 const limit_special_object = 5;
 let special_objects = [];
@@ -35,6 +43,11 @@ const initial_position = {
 	init_y: 0,
 	init_z: 0
 }
+
+const squareSize = 1; // Size of the square
+const squareGeometry = new THREE.PlaneGeometry(squareSize, squareSize);
+const squareMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00, side: THREE.DoubleSide, wireframe:true });
+
 
 
 const grid_size = {
@@ -107,9 +120,6 @@ scene.background = new THREE.Color('black')
 // scene.background = new THREE.Color(0x000000)
 
 
-// scene.add(mesh_o);
-// scene.add(mesh_x);
-
 //BOXES
 // const material = new THREE.MeshNormalMaterial()
 const material = new THREE.MeshStandardMaterial({ color: 'coral', wireframe:false });
@@ -141,7 +151,14 @@ scene.add(plane);
 
 
 
+
+
 //PLANES TRIS ZONE
+// const [x_tris, z_tris] = getCoordByIndex(tris_array[0],grid_size);
+for (let i=0; i<tris_array.length; i++){
+	const [x,z] = getCoordByIndex(tris_array[i],grid_size);
+	addSquare(x,z,squareMaterial,squareGeometry);
+}
 
 const model_path = '3d_models/tyrone_mixamo/scene.gltf';
 const loader = new MainCharacter(model_path,grid_size,initial_position);
@@ -227,19 +244,20 @@ requestAnimationFrame(tic)
 
 
 // PHASE GAME
-let isRunning = false;
 window.addEventListener('keyup',function(e){
 	loader.setDirection(e.code);
 
 	if(e.code == 'KeyG'){
 		if (!isRunning){
 			start_game();
+			isRunning = true;
 			console.log('Partenza gioco:',isRunning);
 		}
 	}
 	else if(e.code == 'KeyP'){
 		if (isRunning){
 			stop_game();
+			isRunning=false;
 			console.log('Gioco fermo!:',isRunning);
 		}
 	}
@@ -302,7 +320,7 @@ window.addEventListener('keyup',function(e){
 
 function start_game(){
 	if(!isRunning){ //if the game is not already started
-		isRunning = setInterval( () => {
+		interval = setInterval( () => {
 			loader.updatePosition(grid_size);
 			loader.addEventListener('updated', () => {
 				const character_ind = loader.getInteralIndex();
@@ -329,7 +347,7 @@ function start_game(){
 
 function stop_game(){
 	// Magari qui mostrare la scritta vittoria?
-	clearInterval(isRunning);
+	clearInterval(interval);
 }
 
 
@@ -591,10 +609,11 @@ function update_visual_tris(visualize, mesh_x_original, mesh_o_original) {
 }
 
 
-function addSquare(x, z) {
+function addSquare(x, z,squareMaterial,squareGeometry) {
     const square = new THREE.Mesh(squareGeometry, squareMaterial);
     square.rotation.x = -Math.PI / 2; // Rotate to lay flat
     square.position.set(x, 0.01, z); // Slightly above the ground to avoid z-fighting
+	// scene.scale.set(0,0,0);
     scene.add(square);
     return square;
 }

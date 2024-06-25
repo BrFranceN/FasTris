@@ -53,7 +53,7 @@ export default class MainCharacter extends EventDispatcher {
         console.log("sto qua", this.internal_index);
         this.modelLoaded = true;
 
-        //abiliti le ombre sia a riceverle che ad emanarle
+        
         this.model.castShadow = true;
         this.model.receiveShadow = true;
         console.log('Model loaded:', this.model);
@@ -71,13 +71,11 @@ export default class MainCharacter extends EventDispatcher {
     }
 
     updatePosition(grid_size){
-        //check collision before update
-        //says also if is in a cell where there is 
+       
         this.model.position.add(this.direction);
         this.internal_index = this.getIndexByCoord();
 
-        // ANIMAZIONE WALK
-        // this.createWalkAnimation();
+      
 
         if (this.model.position.z < 0){
         this.model.position.z = grid_size.y - 1;
@@ -164,7 +162,7 @@ export default class MainCharacter extends EventDispatcher {
  
 
     check_collision(check_index){
-        console.log("sto confrontando",this.internal_index);
+        // console.log("sto confrontando",this.internal_index);
         if (check_index == this.internal_index){
             return true;
         }
@@ -191,84 +189,6 @@ export default class MainCharacter extends EventDispatcher {
     }
 
 
-    // turnBody(dire){
-    //     let adding;
-
-    //     if (dire=='up'){
-
-    //     }else if(dire=='down'){
-
-    //     }else if(dire=='right'){
-
-    //     }else if(dire=='left'){
-    //         adding = - Math.PI*0.5;
-    //     }
-
-
-    //     const body = this.findBoneByName("mixamorigHips_01");
-
-    //     const initialRotation = {body: { y: this.yr_init } };
-
-    //     const targetRotation = { body: { y: body.rotation.y += adding}  };
-
-    //     const tweenForward = new TWEEN.Tween(initialRotation)
-    //     .to(targetRotation, 800)
-    //     .easing(TWEEN.Easing.Quadratic.InOut)
-    //     .onUpdate(() => {
-    //         // initial state
-    //         body.rotation.y = initialRotation.body.y;
-    //     });
-
-    //     tweenForward.start();
-
-    // }
-
-
-    // provo a ruotare la testa
-    // turnHead(){
-
-
-    //     // const head = this.findBoneByName("mixamorigSpine_02");
-    //     // const head = this.findBoneByName("mixamorigSpine1_03");
-    //     // const head = this.findBoneByName("mixamorigSpine2_04"); //busto
-    //     const leftShoulder  = this.findBoneByName("mixamorigLeftShoulder_07");
-    //     const rightShoulder  = this.findBoneByName("mixamorig:RightShoulder_027");
-       
-       
-    //     // mixamorigLeftArm_08
-    //     // mixamorigLeftShoulder_07
-    //     // mixamorigLeftForeArm_09
-
-    //     const initialRotation = {
-    //         leftShoulder: { x: leftShoulder.rotation.x, 
-    //                         y: leftShoulder.rotation.y, 
-    //                         z: leftShoulder.rotation.z }
-    //     };
-
-    //     const targetRotation = {
-    //         leftShoulder: { x: leftShoulder.rotation.x += Math.PI * 0.5,
-    //                             y: leftShoulder.rotation.y  , 
-    //                             z: leftShoulder.rotation.z }
-    //    };
-
-    
-    //     const tweenForward = new TWEEN.Tween(initialRotation)
-    //     .to(targetRotation, 800)
-    //     .easing(TWEEN.Easing.Quadratic.InOut)
-    //     .onUpdate(() => {
-    //         // initial state
-    //         leftShoulder.rotation.set(
-    //             initialRotation.leftShoulder.x, 
-    //             initialRotation.leftShoulder.y, 
-    //             initialRotation.leftShoulder.z);
-    //     });
-
-    //     tweenForward.start();
-    // }
-
-
-
-
     animateLegs() {
 
         const leftUpLeg = this.findBoneByName("mixamorigLeftUpLeg_047");
@@ -290,9 +210,6 @@ export default class MainCharacter extends EventDispatcher {
             rightUpLeg: { x: targetRotationRight.rightUpLeg.x + Math.PI / 6, y: targetRotationRight.rightUpLeg.y, z: targetRotationRight.rightUpLeg.z },
         };
 
-
-        //prova
-        // const tweenBackward = new TWEEN.Tween()
 
         const tweenBackward = new TWEEN.Tween(targetRotationRight)
             .to(targetRotationBack, 800)
@@ -393,12 +310,11 @@ export default class MainCharacter extends EventDispatcher {
                 rightShoulder.rotation.set(targetRotationBackward.rightShoulder.x, targetRotationBackward.rightShoulder.y, targetRotationBackward.rightShoulder.z);
             });
     
-        // Chaining the tweens to create a continuous loop
+        //creo il lopp
         tweenForward.chain(tweenBackward);
         tweenBackward.chain(tweenReturn);
         tweenReturn.chain(tweenForward);
     
-        // Start the animation
         tweenForward.start();
     }
     

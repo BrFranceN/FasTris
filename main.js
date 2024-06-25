@@ -34,12 +34,10 @@ const sizes = {
 const textureLoader = new THREE.TextureLoader();
 
 
+const choice = localStorage.getItem('choice');
 
-
-
-
-
-
+//X AND O
+let meshxo = [];
 
 //Special effects params
 let special_effect = false;
@@ -50,6 +48,7 @@ let salire = true; // for box animation
 let interval;
 let isRunning=false;
 
+
 let n_moves = 0; // number of moves effectuated
 
 // time of one effect
@@ -58,8 +57,7 @@ const effect_time = 10;
 //score of the game
 let score = 0; 
 let time_score = 0;
-const player_choice = 0;
-const limit_special_object = 5;
+const player_choice = choice;
 let special_objects = [];
 
 //TEXT 
@@ -424,35 +422,44 @@ window.addEventListener('keyup',function(e){
 					info_grid[cell_index] = 4;
 				}
 				move_done = true;
-				n_moves +=1;
 			}
-			
-			let visualize = visualize_tris();
-			let winner = checkWin(visualize);
-
-
-			//FORSE QUI POSSO GESTIRE LA SCELTA DI X oppure O da parte del player
-			// nel caso il player scelga X basta rimanerlo uguale
-			update_visual_tris(visualize,mesh_x,mesh_o);
 			
 			//Now Your opponent done the move
 			if (move_done){
 				opponent_action();
 			}
 			
+			
+			
+			let visualize = visualize_tris();
+			let full = checkFullGrid(visualize);
+			let winner = checkWin(visualize);
+
+			if (winner == null){
+				if (full){
+					winner = 'Pair';
+				}
+			}
+
+
+
+			//FORSE QUI POSSO GESTIRE LA SCELTA DI X oppure O da parte del player
+			// nel caso il player scelga X basta rimanerlo uguale
+			update_visual_tris(visualize,mesh_x,mesh_o);
+			
+			
 			visualize = visualize_tris();
 			update_visual_tris(visualize,mesh_x,mesh_o);
 
 			//Check win condition!
 
-			// console.log("info attivo?",info_grid);
-			// console.log("info attivo?",visualize);
-
 			if (winner) {
+				time_score = loader.getTimeScore();
 				console.log(`The winner is: ${winner}`);
 				localStorage.setItem('score', score);
 				localStorage.setItem('moves',time_score);
 				localStorage.setItem('winner',winner);
+				localStorage.setItem('initialChoice',player_choice);
 				window.location.href = "results.html";
 			} else {
 				console.log('No winner yet.');
@@ -563,6 +570,8 @@ function reset_game(){
 	}
 	
 	special_objects = [];
+	removeMeshxo();
+
 
 	score = 0;
 	updateScore(score);
@@ -748,8 +757,11 @@ function visualize_tris(){
 
 function checkWin(visualize) {
     // Check rows
+
+	console.log("visualize",visualize);
     for (let i = 0; i < 3; i++) {
         if (visualize[i][0] === visualize[i][1] && visualize[i][1] === visualize[i][2] && visualize[i][0] !== ' ') {
+			console.log("righe")
             return visualize[i][0]; // Return 'X' or 'O'
         }
     }
@@ -757,23 +769,21 @@ function checkWin(visualize) {
     // Check columns
     for (let i = 0; i < 3; i++) {
         if (visualize[0][i] === visualize[1][i] && visualize[1][i] === visualize[2][i] && visualize[0][i] !== ' ') {
+			console.log("colonne")
             return visualize[0][i]; // Return 'X' or 'O'
         }
     }
 
     // Check diagonals
     if (visualize[0][0] === visualize[1][1] && visualize[1][1] === visualize[2][2] && visualize[0][0] !== ' ') {
+		console.log("diagonale principale");
         return visualize[0][0]; // Return 'X' or 'O'
     }
     if (visualize[0][2] === visualize[1][1] && visualize[1][1] === visualize[2][0] && visualize[0][2] !== ' ') {
+		console.log("diagonale secondaria");
         return visualize[0][2]; // Return 'X' or 'O'
     }
 
-
-	if (n_moves == 9){
-		console.log("pareggioooo!");
-		return -1;
-	}
 
     // No winner
     return null;
@@ -823,6 +833,7 @@ function update_visual_tris(visualize, mesh_x_original, mesh_o_original) {
                 const mesh_x = mesh_x_original.clone();
                 mesh_x.position.set(x, 0, z);
                 mesh_x.name = `X_${index_cell}`;
+				meshxo.push(mesh_x);
                 scene.add(mesh_x);
                 addedMeshes[`X_${index_cell}`] = mesh_x;
                 // console.log("Added X at position:", [x, z]);
@@ -831,6 +842,7 @@ function update_visual_tris(visualize, mesh_x_original, mesh_o_original) {
                 const mesh_o = mesh_o_original.clone();
                 mesh_o.position.set(x, 0, z);
                 mesh_o.name = `O_${index_cell}`;
+				meshxo.push(mesh_o);
                 scene.add(mesh_o);
                 addedMeshes[`O_${index_cell}`] = mesh_o;
                 // console.log("Added O at position:", [x, z]);
@@ -891,6 +903,29 @@ function updateScore(score) {
         scene.remove(textMesh);
     }
     createText(newText); 
+}
+
+
+function checkFullGrid(visualize){
+	let full = true;
+	for (let i = 0; i < visualize.length; i++) {
+        for (let j = 0; j < visualize[i].length; j++) {
+            if (visualize[i][j] == ' '){
+				console.log("ancora spaziooooooo!");
+				full = false;
+			}
+    	}
+	}
+
+	return full;
+}
+
+function removeMeshxo(){
+	for (let i =0; i < meshxo.length; i++){
+		scene.remove(meshxo[i]);
+	}
+
+	meshxo = [];
 }
 
 

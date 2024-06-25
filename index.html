@@ -1,12 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<!-- <link rel="icon" type="image/svg+xml" href="/vite.svg" /> -->
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Vite App</title>
-	</head>
-	<body>
-		<script type="module" src="/main.js"></script>
-	</body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FasTris</title>
+    <link rel="stylesheet" href="results.css">
+</head>
+<body>
+    <div class="container">
+        
+        <h1> Welcome to FasTris</h1>
+        <h1> Please choice:</h1>
+        <div id="choice_container">
+            <div id="choice_x" class="choice">
+                <canvas id="canvas_x"></canvas>
+            </div>
+            <div id="choice_o" class="choice">
+                <canvas id="canvas_o"></canvas>
+            </div>
+        </div>
+        <button id="play_button" disabled>Play</button>
+
+    </div>
+
+    <script type="module" src="/index.js"></script>
+</body>
 </html>

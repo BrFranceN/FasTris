@@ -41,9 +41,6 @@ let meshxo = [];
 
 //Special effects params
 let special_effect = false;
-let time_special = -1;
-const n_effect = 1;
-const duration_effect = 30;
 let salire = true; // for box animation
 let interval;
 let isRunning=false;

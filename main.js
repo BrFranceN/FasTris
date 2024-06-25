@@ -266,7 +266,8 @@ const check_model_loaded = setInterval(() => {
 
 
 //Camera
-const fov = 10;
+// const fov = 60; 
+const fov = 10;//DEBUG
 const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1);
 camera.position.set(14, 6, 14);
 // camera.position.set(grid_size.x/2 + 2, 10 ,grid_size.y/2 + 2);
@@ -384,14 +385,18 @@ window.addEventListener('keyup',function(e){
 	if(e.code == 'KeyT'){
 		console.log("debug animation:");
 
-		loader.turnHead();
+		// loader.turnHead();
 		// loader.turnBody();
+		loader.setArm();
+		loader.animateLegs();
+		loader.animateArms2();
+		// loader.createWalkAnimation2();
 	}
 
 	if(e.code == 'KeyG'){
 		if (!isRunning){
 			start_game();
-			isRunning = true;
+			// isRunning = true; DEBUG
 			// console.log('Partenza gioco:',isRunning);
 		}
 	}
@@ -402,7 +407,6 @@ window.addEventListener('keyup',function(e){
 			// console.log('Gioco fermo!:',isRunning);
 		}
 	}
-
 	else if(e.code == 'Space' && isRunning){
 		const character_ind = loader.getInteralIndex();		
 		const tris_found_index = tris_array.findIndex(tris_index => tris_index == character_ind);
@@ -447,13 +451,19 @@ window.addEventListener('keyup',function(e){
 
 			if (winner) {
 				console.log(`The winner is: ${winner}`);
+				localStorage.setItem('score', score);
+				localStorage.setItem('moves',time_score);
+				window.location.href = "results.html";
 			} else {
 				console.log('No winner yet.');
 			}
 		}
 	}
-
-
+	// need to check or not if isRunning?
+	else if(e.code == "KeyR"){
+		loader.reset();
+		reset_game();
+	}
 
 })
 
@@ -471,7 +481,12 @@ function start_game(){
 				if (so_found_index >=0){
 					const cell_index = special_objects[so_found_index].getCellIndex();
 					//TODO GESTIRE GLI EFFETTI DEGLI SPECIAL OBJECT
-					let index_effect = Math.floor(Math.random() * n_effect); 
+					let index_effect;
+					if (Math.random() >= 0.5){
+						index_effect = 1;
+					}else{
+						index_effect = 0;
+					}
 					// console.log("effetto -> ",index_effect);
 					special_effect = loader.getStateEffect();
 					// Controllo se non c'e' gia' un effetto settato!
@@ -522,7 +537,8 @@ function start_game(){
 
 		});
 			add_special_object(grid_size,loader);
-		},400)
+		},400);
+		isRunning=true;
 	}
 }
 
@@ -533,9 +549,32 @@ function stop_game(){
 }
 
 
-// function reset_game(){
+function reset_game(){
+	stop_game();
+	isRunning=false;
+	//reset the info of the grid
+	info_grid = createInfo(grid_size.x, grid_size.y,tris_array);
+	console.log("info grid: ", info_grid);
 
-// }
+	//remove all objects from the scene
+	for (let i = 0; i < special_objects.length; i++) {
+		console.log("sto rimuovendo", special_objects[i]);
+		scene.remove(special_objects[i].mesh);
+	}
+	
+	special_objects = [];
+
+	score = 0;
+	updateScore(score);
+
+	start_game();
+	isRunning = true;
+
+	
+
+
+
+}
 
 
 

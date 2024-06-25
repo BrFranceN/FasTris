@@ -50,6 +50,8 @@ let salire = true; // for box animation
 let interval;
 let isRunning=false;
 
+let n_moves = 0; // number of moves effectuated
+
 // time of one effect
 const effect_time = 10;
 
@@ -266,8 +268,8 @@ const check_model_loaded = setInterval(() => {
 
 
 //Camera
-// const fov = 60; 
-const fov = 10;//DEBUG
+const fov = 60; 
+// const fov = 10;//DEBUG
 const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1);
 camera.position.set(14, 6, 14);
 // camera.position.set(grid_size.x/2 + 2, 10 ,grid_size.y/2 + 2);
@@ -295,7 +297,7 @@ handleResize()
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.target.set(grid_size.x/2,0,grid_size.y/2); // guardare verso
-controls.target.set(0,0,0); // guardare verso DEBUG
+// controls.target.set(0,0,0); // guardare verso DEBUG
 
 
 // Lights
@@ -384,18 +386,14 @@ window.addEventListener('keyup',function(e){
 	//TEST ANIMAZIONE DA CANCELLARE
 	if(e.code == 'KeyT'){
 		console.log("debug animation:");
-
-		// loader.turnHead();
-		// loader.turnBody();
-		loader.setArm();
-		loader.animateLegs();
-		loader.animateArms2();
-		// loader.createWalkAnimation2();
 	}
 
 	if(e.code == 'KeyG'){
 		if (!isRunning){
 			start_game();
+			loader.setArm();
+			loader.animateLegs();
+			loader.animateArms();
 			// isRunning = true; DEBUG
 			// console.log('Partenza gioco:',isRunning);
 		}
@@ -426,6 +424,7 @@ window.addEventListener('keyup',function(e){
 					info_grid[cell_index] = 4;
 				}
 				move_done = true;
+				n_moves +=1;
 			}
 			
 			let visualize = visualize_tris();
@@ -453,6 +452,7 @@ window.addEventListener('keyup',function(e){
 				console.log(`The winner is: ${winner}`);
 				localStorage.setItem('score', score);
 				localStorage.setItem('moves',time_score);
+				localStorage.setItem('winner',winner);
 				window.location.href = "results.html";
 			} else {
 				console.log('No winner yet.');
@@ -710,6 +710,8 @@ function opponent_action() {
 			info_grid[choosen_index] = 3;
 		}
 	}
+
+	n_moves +=1;
 }
 
 function tris_available_cells() {
@@ -766,6 +768,12 @@ function checkWin(visualize) {
     if (visualize[0][2] === visualize[1][1] && visualize[1][1] === visualize[2][0] && visualize[0][2] !== ' ') {
         return visualize[0][2]; // Return 'X' or 'O'
     }
+
+
+	if (n_moves == 9){
+		console.log("pareggioooo!");
+		return -1;
+	}
 
     // No winner
     return null;

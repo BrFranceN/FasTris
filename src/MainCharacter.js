@@ -29,6 +29,7 @@ export default class MainCharacter extends EventDispatcher {
     special_objects = [];
     timer = -1;
     special_effect = -1;
+    time_score = 0;
         
 
     constructor(url,grid_size,initial_position) {
@@ -55,12 +56,16 @@ export default class MainCharacter extends EventDispatcher {
         this.internal_index = this.getIndexByCoord(); //set the initial index given by intial position of the body
         console.log("sto qua", this.internal_index);
         this.modelLoaded = true;
+
+        //abiliti le ombre sia a riceverle che ad emanarle
+        this.model.castShadow = true;
+        this.model.receiveShadow = true;
         console.log('Model loaded:', this.model);
 
         // Traverse and log all node names
-        // this.model.traverse((node) => {
-        //     console.log(node.name);
-        // });
+        this.model.traverse((node) => {
+            console.log(node.name);
+        });
 
 
 
@@ -103,21 +108,25 @@ export default class MainCharacter extends EventDispatcher {
             case 'KeyW':
                 this.direction = this.UP;
                 this.checkEffect();
+                this.updateTime();
                 break
             case 'ArrowDown':
             case 'KeyS':
                 this.direction = this.DOWN;
                 this.checkEffect();
+                this.updateTime();
                 break
             case 'ArrowLeft':
             case 'KeyA':
                 this.direction = this.LEFT;
                 this.checkEffect();
+                this.updateTime();
                 break
             case 'ArrowRight':
             case 'KeyD':
                 this.direction = this.RIGHT;
                 this.checkEffect();
+                this.updateTime();
                 break
             default:
                 return
@@ -153,7 +162,7 @@ export default class MainCharacter extends EventDispatcher {
         this.DOWN = new Vector3(0,0,2);
         this.RIGHT = new Vector3(2,0,0);
         this.LEFT = new Vector3(-2,0,0);
-        this.timer=10;
+        this.timer=3;
     }
 
 
@@ -184,6 +193,81 @@ export default class MainCharacter extends EventDispatcher {
                 this.special_effect = -1;
             }
         }
+    }
+
+
+    turnBody(){
+        const body = this.findBoneByName("mixamorigHips_01");
+
+        const initialRotation = {
+            body: { x: body.rotation.x, y: body.rotation.y, z: body.rotation.z }
+        };
+
+        const targetRotation = {
+            body: { x: body.rotation.x, y: body.rotation.y += Math.PI*-0.5 , z: body.rotation.z }
+       };
+
+
+
+        const tweenForward = new TWEEN.Tween(initialRotation)
+        .to(targetRotation, 800)
+        .easing(TWEEN.Easing.Quadratic.InOut)
+        .onUpdate(() => {
+            // initial state
+            body.rotation.set(initialRotation.body.x, initialRotation.body.y, initialRotation.body.z);
+        });
+
+        tweenForward.start();
+        
+
+
+
+    }
+
+
+    // provo a ruotare la testa
+    turnHead(){
+
+        // const head = this.findBoneByName("mixamorigSpine_02");
+        // const head = this.findBoneByName("mixamorigSpine1_03");
+        // const head = this.findBoneByName("mixamorigSpine2_04"); //busto
+        const leftShoulder  = this.findBoneByName("mixamorigLeftShoulder_07");
+        const rightShoulder  = this.findBoneByName("mixamorig:RightShoulder_027");
+       
+       
+        // mixamorigLeftArm_08
+        // mixamorigLeftShoulder_07
+        // mixamorigLeftForeArm_09
+
+        const initialRotation = {
+            leftShoulder: { x: leftShoulder.rotation.x, 
+                            y: leftShoulder.rotation.y, 
+                            z: leftShoulder.rotation.z }
+        };
+
+        const targetRotation = {
+            leftShoulder: { x: leftShoulder.rotation.x += Math.PI * 0.5,
+                                y: leftShoulder.rotation.y  , 
+                                z: leftShoulder.rotation.z }
+       };
+
+    
+        const tweenForward = new TWEEN.Tween(initialRotation)
+        .to(targetRotation, 800)
+        .easing(TWEEN.Easing.Quadratic.InOut)
+        .onUpdate(() => {
+            // initial state
+            leftShoulder.rotation.set(
+                initialRotation.leftShoulder.x, 
+                initialRotation.leftShoulder.y, 
+                initialRotation.leftShoulder.z);
+        });
+
+        tweenForward.start();
+        
+
+
+
     }
 
 
@@ -261,15 +345,21 @@ export default class MainCharacter extends EventDispatcher {
     getStateEffect(){
         return this.special_effect;
     }
+    getTimeScore(){
+        console.log("time score get:",this.time_score);
+        return this.time_score;
+    }
 
     setStateEffect(number_effect){
         console.log("sto settando l'effetto", number_effect);
         this.special_effect = number_effect;
-        this.timer = 10;
+        this.timer = 3;
     }
 
 
-    tele
+    updateTime(){
+        this.time_score +=1;
+    }
 
 
 

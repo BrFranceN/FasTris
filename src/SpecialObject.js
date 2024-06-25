@@ -1,4 +1,4 @@
-import {Mesh,MeshNormalMaterial,MeshStandardMaterial,SphereGeometry, TorusGeometry} from "three";
+import {Mesh,MeshNormalMaterial,MeshStandardMaterial,SphereGeometry, TorusGeometry,MeshPhysicalMaterial} from "three";
 
 // const geometry = new SphereGeometry(0.3,10,10);
 const radius = 0.4;
@@ -11,7 +11,7 @@ const geometry = new TorusGeometry(radius, tube, radialSegments, tubularSegments
 
 
 // Crea un materiale fisico con il colore giallo e le proprietà riflettenti
-const material = new THREE.MeshPhysicalMaterial({
+const material = new MeshPhysicalMaterial({
     color: 0xffff00, // Colore giallo
     metalness: 0.5,  // Proprietà metallica
     roughness: 0.1,  // Superficie liscia

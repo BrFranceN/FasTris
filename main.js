@@ -4,6 +4,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import {Mesh, MeshNormalMaterial, Vector3} from 'three'; //controlla se poi li usi
 import TWEEN from '@tweenjs/tween.js';
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 
 // import * as dat from 'lil-gui'
 import { AmbientLight, DirectionalLight } from 'three'
@@ -11,6 +13,7 @@ import MainCharacter from './src/MainCharacter';
 import { update } from 'three/examples/jsm/libs/tween.module.js';
 import SpecialObject from './src/SpecialObject';
 import { mx_bits_to_01 } from 'three/examples/jsm/nodes/materialx/lib/mx_noise.js';
+import { depth } from 'three/examples/jsm/nodes/Nodes.js';
 // import { GUI } from 'dat.gui'
 
 //MAP
@@ -26,22 +29,24 @@ const sizes = {
 	height: window.innerHeight,
 };
 
-let salire = true;
-let salire_b = true;
+
+// Loader textures
+const textureLoader = new THREE.TextureLoader();
+
+
+
+
+
+
+
 
 
 //Special effects params
 let special_effect = false;
 let time_special = -1;
-const n_effect = 3;
+const n_effect = 1;
 const duration_effect = 30;
-
-//effect 1 -> jump of 2 cell
-//effect 2 -> super speed
-//effect 3 -> random control
-//effect 4 -> teleporter
-
-
+let salire = true; // for box animation
 let interval;
 let isRunning=false;
 
@@ -49,12 +54,28 @@ let isRunning=false;
 const effect_time = 10;
 
 //score of the game
-const score = 0;
-const time = 0;
-
+let score = 0; 
+let time_score = 0;
 const player_choice = 0;
 const limit_special_object = 5;
 let special_objects = [];
+
+//TEXT 
+let textMesh;
+let font;
+let text;
+let text_command;
+let text_command2;
+const fontLoader = new FontLoader();
+fontLoader.load('public/font/helvetiker_regular.typeface.json', function(loadedFont) {
+	text = "Score:" + score;
+	text_command = "W";
+	text_command2 = "A S D";
+	font = loadedFont;
+	createText(text);
+	createText(text_command,false,-2,1.5,6,0,Math.PI/2,0);
+	createText(text_command2,false,-2,0,7,0,Math.PI/2,0);
+});
 
 const initial_position = {
 	init_x: 0,
@@ -62,29 +83,28 @@ const initial_position = {
 	init_z: 0
 }
 
+//Parameters of square in the ring tris
 const squareSize = 1; // Size of the square
 const squareGeometry = new THREE.PlaneGeometry(squareSize, squareSize);
-const squareMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00, side: THREE.DoubleSide, wireframe:true });
-
-
+const squareMaterial = new THREE.MeshBasicMaterial({ color: 'white', side: THREE.DoubleSide, wireframe:true });
 
 const grid_size = {
-	x: 10,
-	y: 10,
+	x: 11,
+	y: 11,
 };
 
-const tris_array = [34,35,36,
-					44,45,46,
-					54,55,56];
-
-
-let info_grid = createInfo(grid_size.x, grid_size.y,tris_array);
-console.log(info_grid);
-
-//Where tris is positioned 
-const dim_character = 1;
-
-//DEBUG
+const tris_array = [48,49,50,
+	59,60,61,
+	70,71,72];
+	
+	
+	let info_grid = createInfo(grid_size.x, grid_size.y,tris_array);
+	// console.log(info_grid);
+	
+	//Where tris is positioned 
+	const dim_character = 1;
+	
+	//DEBUG
 // const gui = new dat.GUI()
 
 
@@ -107,20 +127,20 @@ mesh_o.scale.set(0.5,0.5,0.5);
 
 // Define the shape of an "X"
 const createXShape = () => {
-    const xGroup = new THREE.Group();
-
+	const xGroup = new THREE.Group();
+	
     const geometry = new THREE.BoxGeometry(0.2, 2, 0.2);
     const material = new THREE.MeshBasicMaterial({ color: 0x3351bd });
-
+	
     const bar1 = new THREE.Mesh(geometry, material);
     bar1.rotation.z = Math.PI / 4;
-
+	
     const bar2 = new THREE.Mesh(geometry, material);
     bar2.rotation.z = -Math.PI / 4;
-
+	
     xGroup.add(bar1);
     xGroup.add(bar2);
-
+	
     return xGroup;
 };
 
@@ -134,30 +154,77 @@ mesh_x.scale.set(0.5, 0.5, 0.5);
 // Add the "X" shape to the scene
 //SCENE
 const scene = new THREE.Scene()
-scene.background = new THREE.Color('black')
+scene.background = new THREE.Color(0x39c09f)
+scene.fog = new THREE.Fog(0x39c09f,20,35);
 // scene.background = new THREE.Color(0x000000)
 
 
+
+
 //BOXES
-// const material = new THREE.MeshNormalMaterial()
-const material = new THREE.MeshStandardMaterial({ color: 0x0047ed, wireframe:false });
+const material = new THREE.MeshStandardMaterial({ color: 0x1d5846, wireframe:false });
+// const block_txt = textureLoader.load('/textures/block.jpg');
+// const block_bmp = textureLoader.load('/textures/block_bump.jpg');
+// const material = new THREE.MeshStandardMaterial({
+//   map: block_txt,
+//   bumpMap:block_bmp, 
+//   bumpScale: 0.05,  
+// });
+
 const geometry = new THREE.BoxGeometry(dim_character, dim_character, dim_character);
 const mesh1 = new THREE.Mesh(geometry, material);
 const mesh2 = new THREE.Mesh(geometry, material);
 const mesh3 = new THREE.Mesh(geometry, material);
 const mesh4 = new THREE.Mesh(geometry, material);
 mesh1.position.set(-1, 3, -1);
-mesh2.position.set(10, 3, 10);
-mesh3.position.set(-1, 0, 10 );
-mesh4.position.set(10, 0,-1 );
-scene.add(mesh1);	
-scene.add(mesh2);
+mesh2.position.set(grid_size.x, 3, grid_size.y);
+mesh3.position.set(-1, 0, grid_size.x );
+mesh4.position.set(grid_size.x, 0,-1 );
+
+mesh1.castShadow = true;
+mesh1.receiveShadow = true;
+mesh2.castShadow = true;
+mesh2.receiveShadow = true;
+mesh3.castShadow = true;
+mesh3.receiveShadow = true;
+mesh4.castShadow = true;
+mesh4.receiveShadow = true;
+scene.add(mesh1);		
+// scene.add(mesh2);
 scene.add(mesh3);
 scene.add(mesh4);
 
-
 //PLANE
-const planeMaterial = new THREE.MeshStandardMaterial({ color: "black", wireframe:true});
+const terrain_Texture = textureLoader.load('textures/terrain.jpg');
+const terrain_BumpMap = textureLoader.load('textures/terrain_bump.jpg'); 
+
+// const terrainMaterial = new THREE.MeshStandardMaterial({
+//   map: terrain_Texture,
+//   bumpMap:terrain_BumpMap, 
+//   bumpScale: 0.05,  
+// });
+const terrainMaterial = new THREE.MeshStandardMaterial({ color: 0x56f854});
+const terrainGeometry = new THREE.PlaneGeometry(50, 50,50,50);
+const terrain = new THREE.Mesh(terrainGeometry, terrainMaterial);
+terrain.rotateX(-Math.PI * 0.5); //because is vertical originally
+terrain.position.setY(-1.5);
+terrain.receiveShadow = true;
+scene.add(terrain);
+
+//PLANE TRIS
+
+// const planeMaterial = new THREE.MeshStandardMaterial({ map: terrain_Texture,bumbMap:terrain_BumpMap, bumbScale:0.08});
+const ring_Texture = textureLoader.load('textures/ring.jpg');
+const ring_BumpMap = textureLoader.load('textures/ring_bump.jpg'); 
+
+// const planeMaterial = new THREE.MeshStandardMaterial({
+// 	map: ring_Texture,
+// 	bumpMap:ring_BumpMap, 
+// 	bumpScale: 0.05
+//   });
+
+//cambiare colore ring
+const planeMaterial = new THREE.MeshStandardMaterial({ color: 'black', wireframe:true});
 // to create a  x columns 
 const planeGeometry = new THREE.PlaneGeometry(grid_size.x, grid_size.y,grid_size.x,grid_size.y);
 planeGeometry.rotateX(-Math.PI * 0.5); //because is vertical originally
@@ -165,7 +232,10 @@ const plane = new THREE.Mesh(planeGeometry, planeMaterial);
 // move the ground in such way to have a more readable grid (with the 0,0,0 at the bottom left)
 plane.position.x = grid_size.x / 2  - (dim_character/2);
 plane.position.z = grid_size.y / 2 - (dim_character/2);  
+// plane.position.setY(-1);
 scene.add(plane);
+
+plane.receiveShadow = true;
 
 
 
@@ -196,11 +266,12 @@ const check_model_loaded = setInterval(() => {
 
 
 //Camera
-const fov = 60;
-const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1)
-// camera.position.set(4, 4, 4);
-camera.position.set(grid_size.x/2 + 2, 10 ,grid_size.y/2 + 2);
-camera.lookAt(new THREE.Vector3(0, 2.5, 0))
+const fov = 10;
+const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1);
+camera.position.set(14, 6, 14);
+// camera.position.set(grid_size.x/2 + 2, 10 ,grid_size.y/2 + 2);
+// camera.lookAt(new THREE.Vector3(0, 2.5, 0))
+camera.lookAt(new THREE.Vector3(3, 2.5, 3));
 
 //Show the axes of coordinates system
 const axesHelper = new THREE.AxesHelper(3)
@@ -211,19 +282,34 @@ const renderer = new THREE.WebGLRenderer({
 	antialias: window.devicePixelRatio < 2,
 	logarithmicDepthBuffer: true,
 })
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.5;
+renderer.shadowMap.enabled = true; // ombre
+renderer.shadowMap.type = THREE.VSMShadowMap;
+// renderer.outputEncoding = THREE.sRGBEncoding;
 document.body.appendChild(renderer.domElement)
 handleResize()
 
 // OrbitControls
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
-controls.target.set(grid_size.x/2,2,grid_size.y/2);
+controls.target.set(grid_size.x/2,0,grid_size.y/2); // guardare verso
+controls.target.set(0,0,0); // guardare verso DEBUG
 
 
 // Lights
-const ambientLight = new AmbientLight(0xffffff, 1.5)
-const directionalLight = new DirectionalLight(0xffffff, 4.5)
-directionalLight.position.set(3, 10, 7)
+const ambientLight = new AmbientLight(0xffffff, 1.5);
+const directionalLight = new DirectionalLight(0xffffff, 3.5);
+directionalLight.position.set(20, 20, 20);
+directionalLight.target.position.set(grid_size.x,0,grid_size.y);
+directionalLight.shadow.mapSize.set(1024,1024);
+directionalLight.shadow.radius = 6;
+// directionalLight.shadow.blurSamples = 30;
+directionalLight.shadow.camera.top = 30;
+directionalLight.shadow.camera.bottom = -30;
+directionalLight.shadow.camera.left = -30;
+directionalLight.shadow.camera.right = 30;
+directionalLight.castShadow = true;
 scene.add(ambientLight, directionalLight)
 
 //Clock three js
@@ -294,18 +380,26 @@ requestAnimationFrame(tic)
 window.addEventListener('keyup',function(e){
 	loader.setDirection(e.code);
 
+	//TEST ANIMAZIONE DA CANCELLARE
+	if(e.code == 'KeyT'){
+		console.log("debug animation:");
+
+		loader.turnHead();
+		// loader.turnBody();
+	}
+
 	if(e.code == 'KeyG'){
 		if (!isRunning){
 			start_game();
 			isRunning = true;
-			console.log('Partenza gioco:',isRunning);
+			// console.log('Partenza gioco:',isRunning);
 		}
 	}
 	else if(e.code == 'KeyP'){
 		if (isRunning){
 			stop_game();
 			isRunning=false;
-			console.log('Gioco fermo!:',isRunning);
+			// console.log('Gioco fermo!:',isRunning);
 		}
 	}
 
@@ -317,8 +411,8 @@ window.addEventListener('keyup',function(e){
 
 			const cell_tris_state = info_grid[cell_index];
 			let move_done = false;
-			console.log("cell_tris_state",cell_tris_state);
-			console.log("cell_index",cell_index);
+			// console.log("cell_tris_state",cell_tris_state);
+			// console.log("cell_index",cell_index);
 			//You done the move)
 			if (cell_tris_state == 2){
 
@@ -348,8 +442,8 @@ window.addEventListener('keyup',function(e){
 
 			//Check win condition!
 
-			console.log("info attivo?",info_grid);
-			console.log("info attivo?",visualize);
+			// console.log("info attivo?",info_grid);
+			// console.log("info attivo?",visualize);
 
 			if (winner) {
 				console.log(`The winner is: ${winner}`);
@@ -376,37 +470,42 @@ function start_game(){
 				const so_found_index = special_objects.findIndex(element => element.getCellIndex() == character_ind);
 				if (so_found_index >=0){
 					const cell_index = special_objects[so_found_index].getCellIndex();
-					
 					//TODO GESTIRE GLI EFFETTI DEGLI SPECIAL OBJECT
-					let index_effect = Math.floor(Math.random * n_effect); 
+					let index_effect = Math.floor(Math.random() * n_effect); 
+					// console.log("effetto -> ",index_effect);
 					special_effect = loader.getStateEffect();
-				
-					index_effect = 0;
 					// Controllo se non c'e' gia' un effetto settato!
 					if (special_effect==-1){
 						special_effect = index_effect;
 						if (index_effect == 0){
-							console.log("attivazione effetto 1");
+							//speed up effect
+							// console.log("attivazione effetto 1");
 							loader.skipControl();
 							loader.setStateEffect(special_effect);
 						}else if (index_effect == 1){
-							console.log("attivazione effetto 2");
-							loader.model.position.set
-						}else if (index_effect == 2){
-							console.log("attivazione effetto 3");
-							time_special = 11;
-						}else if (index_effect == 3){
-							console.log("attivazione effetto 4");
-							time_special = 11;
+							//teleporter effect
+							// console.log("attivazione effetto 2");
+							let indx = Math.floor(Math.random() * (grid_size.x*grid_size.y));
+							console.log("indice ",indx);
+							let [random_x,random_z] = getCoordByIndex(indx,grid_size);
+							console.log("x and z", random_x,random_z);
+							console.log()
+							loader.model.position.set(random_x,0,random_z);
 						}
 					}
 					
 					info_grid[cell_index] = 0;
-					console.log("array of so",special_objects);
+					// console.log("array of so",special_objects);
 					console.log("remove a special object from scene");
 					scene.remove(special_objects[so_found_index].mesh);
 					special_objects.splice(so_found_index,1);
+					//Add score
+					score+=100;
+					updateScore(score);
 				}
+
+		
+
 
 				//check if deactivate or not special effect
 				// check the timer of loader
@@ -450,11 +549,14 @@ function add_special_object(grid_size,loader){
 			do{
 				random_index = Math.floor(Math.random() * grid_size.x *grid_size.y);
 				collision = loader.check_collision(random_index);
-				console.log("collision:", collision);
+				// console.log("collision:", collision);
 			}while(loader.check_collision(random_index) || info_grid[random_index]!=0);
 			
 			//I want generate an object in a cell != character cell
 			const special_object = new SpecialObject(random_index);
+			special_object.mesh.position.setY(0.5);
+			special_object.mesh.castShadow = true;
+			special_object.mesh.receiveShadow = true;
 			info_grid[random_index] = 1;
 			
 			// console.log("n_so", countObjectType(info_grid,1));
@@ -676,7 +778,7 @@ function update_visual_tris(visualize, mesh_x_original, mesh_o_original) {
                 mesh_x.name = `X_${index_cell}`;
                 scene.add(mesh_x);
                 addedMeshes[`X_${index_cell}`] = mesh_x;
-                console.log("Added X at position:", [x, z]);
+                // console.log("Added X at position:", [x, z]);
 
             } else if (cellValue === 'O' && !addedMeshes[`O_${index_cell}`]) {
                 const mesh_o = mesh_o_original.clone();
@@ -684,14 +786,14 @@ function update_visual_tris(visualize, mesh_x_original, mesh_o_original) {
                 mesh_o.name = `O_${index_cell}`;
                 scene.add(mesh_o);
                 addedMeshes[`O_${index_cell}`] = mesh_o;
-                console.log("Added O at position:", [x, z]);
+                // console.log("Added O at position:", [x, z]);
             }
         }
         index_init += 3;
     }
 }
 
-
+//Add a colorated square on principal plane 
 function addSquare(x, z,squareMaterial,squareGeometry) {
     const square = new THREE.Mesh(squareGeometry, squareMaterial);
     square.rotation.x = -Math.PI / 2; // Rotate to lay flat
@@ -699,6 +801,49 @@ function addSquare(x, z,squareMaterial,squareGeometry) {
 	// scene.scale.set(0,0,0);
     scene.add(square);
     return square;
+}
+
+
+// Funzione per creare e aggiungere il testo alla scena
+function createText(text,global=true,x=3,y=0,z=-2.5,x_r=0,y_r=0,z_r=0) {
+	// console.log("creazione testo",font);
+    const options = {
+        font: font,
+        size: 1,
+        depth: 0.2,
+        curveSegments: 12,
+        bevelEnabled: true,
+        bevelThickness: 0.03,
+        bevelSize: 0.02,
+        bevelOffset: 0,
+        bevelSegments: 5
+    };
+	let material_text = new THREE.MeshStandardMaterial({ color: 0x1d5846 });
+	let geometry_text = new TextGeometry(text, options);
+	if (global == true){
+		textMesh = new Mesh(geometry_text, material_text);
+		textMesh.position.set(x, y, z);
+		textMesh.rotation.set(x_r,y_r,z_r);
+		scene.add(textMesh);
+	}else{
+		let mesh = new Mesh(geometry_text, material_text);
+		mesh.position.set(x, y, z);
+		mesh.rotation.set(x_r,y_r,z_r); 
+		scene.add(mesh);
+	}
+}
+
+
+
+// Funzione per aggiornare il testo dello score
+function updateScore(score) {
+    let newText = "Score:" + score;
+
+
+    if (textMesh) {
+        scene.remove(textMesh);
+    }
+    createText(newText); 
 }
 
 
@@ -718,11 +863,6 @@ function addSquare(x, z,squareMaterial,squareGeometry) {
 
 
 
-
-
-
-
-//LOGIC OF TRIS 
 
 
 

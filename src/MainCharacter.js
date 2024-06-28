@@ -12,14 +12,11 @@ export default class MainCharacter extends EventDispatcher {
     DOWN = new Vector3(0,0,1);
     RIGHT = new Vector3(1,0,0);
     LEFT = new Vector3(-1,0,0);
-
     original_UP = new Vector3(0,0,-1);
     original_DOWN = new Vector3(0,0,1);
     original_RIGHT = new Vector3(1,0,0);
     original_LEFT = new Vector3(-1,0,0);
 
-
-    
 
     direction =  this.UP;
     special_objects = [];
@@ -93,9 +90,6 @@ export default class MainCharacter extends EventDispatcher {
     }
 
 
-
-    
-
     setDirection(keyCode){
         switch (keyCode) {
             case 'ArrowUp':
@@ -143,10 +137,6 @@ export default class MainCharacter extends EventDispatcher {
         this.DOWN = this.original_DOWN;
         this.LEFT = this.original_LEFT;
         this.RIGHT = this.original_RIGHT;
-        console.log("ciao",this.UP);
-        console.log("ciao",this.DOWN);
-        console.log("ciao",this.LEFT);
-        console.log("ciao",this.RIGHT);
     }
     
     
@@ -157,9 +147,6 @@ export default class MainCharacter extends EventDispatcher {
         this.LEFT = new Vector3(-2,0,0);
         this.timer=3;
     }
-
-
- 
 
     check_collision(check_index){
         // console.log("sto confrontando",this.internal_index);
@@ -188,7 +175,6 @@ export default class MainCharacter extends EventDispatcher {
         }
     }
 
-
     animateLegs() {
 
         const leftUpLeg = this.findBoneByName("mixamorigLeftUpLeg_047");
@@ -212,39 +198,35 @@ export default class MainCharacter extends EventDispatcher {
 
 
         const tweenBackward = new TWEEN.Tween(targetRotationRight)
-            .to(targetRotationBack, 800)
-            .easing(TWEEN.Easing.Quadratic.InOut)
-            .onUpdate(() => {
-                leftUpLeg.rotation.set(targetRotationRight.leftUpLeg.x, targetRotationRight.leftUpLeg.y, targetRotationRight.leftUpLeg.z);
-                rightUpLeg.rotation.set(targetRotationRight.rightUpLeg.x, targetRotationRight.rightUpLeg.y, targetRotationRight.rightUpLeg.z);
-            });
+        .to(targetRotationBack, 800)
+        .easing(TWEEN.Easing.Quadratic.InOut)
+        .onUpdate(() => {
+            leftUpLeg.rotation.set(targetRotationRight.leftUpLeg.x, targetRotationRight.leftUpLeg.y, targetRotationRight.leftUpLeg.z);
+            rightUpLeg.rotation.set(targetRotationRight.rightUpLeg.x, targetRotationRight.rightUpLeg.y, targetRotationRight.rightUpLeg.z);
+        });
 
 
 
         const tweenForwardLeft = new TWEEN.Tween({ rotation: 0  })
-            .to({ rotation: Math.PI / 6 }, 800)
-            .onUpdate(({ rotation }) => {
-                if (leftUpLeg) leftUpLeg.rotation.x = -rotation;
-                if (rightUpLeg) rightUpLeg.rotation.x = rotation;
-            });
+        .to({ rotation: Math.PI / 6 }, 800)
+        .onUpdate(({ rotation }) => {
+            if (leftUpLeg) leftUpLeg.rotation.x = -rotation;
+            if (rightUpLeg) rightUpLeg.rotation.x = rotation;
+        });
 
 
         //piede destro in avanti
         const tweenForwardRight = new TWEEN.Tween({ rotation: 0  })
-            .to({ rotation: Math.PI / 6 }, 800)
-            .onUpdate(({ rotation }) => {
-                if (leftUpLeg) leftUpLeg.rotation.x = rotation;
-                if (rightUpLeg) rightUpLeg.rotation.x = -rotation;
-            });
-
-        
+        .to({ rotation: Math.PI / 6 }, 800)
+        .onUpdate(({ rotation }) => {
+            if (leftUpLeg) leftUpLeg.rotation.x = rotation;
+            if (rightUpLeg) rightUpLeg.rotation.x = -rotation;
+        });
 
             tweenForwardRight.chain(tweenBackward);
             tweenBackward.chain(tweenForwardLeft);
             tweenForwardLeft.chain(tweenForwardRight);
-        
             tweenForwardRight.start();
-        
    
             
     }
@@ -287,7 +269,7 @@ export default class MainCharacter extends EventDispatcher {
         };
     
         const tweenForward = new TWEEN.Tween(initialRotation)
-            .to(targetRotationForward, 800)
+            .to(targetRotationForward, 1200)
             .easing(TWEEN.Easing.Quadratic.InOut)
             .onUpdate(() => {
                 leftShoulder.rotation.set(initialRotation.leftShoulder.x, initialRotation.leftShoulder.y, initialRotation.leftShoulder.z);
@@ -295,7 +277,7 @@ export default class MainCharacter extends EventDispatcher {
             });
     
         const tweenBackward = new TWEEN.Tween(targetRotationForward)
-            .to(targetRotationBackward, 800)
+            .to(targetRotationBackward, 1200)
             .easing(TWEEN.Easing.Quadratic.InOut)
             .onUpdate(() => {
                 leftShoulder.rotation.set(targetRotationForward.leftShoulder.x, targetRotationForward.leftShoulder.y, targetRotationForward.leftShoulder.z);
@@ -303,7 +285,7 @@ export default class MainCharacter extends EventDispatcher {
             });
     
         const tweenReturn = new TWEEN.Tween(targetRotationBackward)
-            .to(initialRotation, 800)
+            .to(initialRotation, 1200)
             .easing(TWEEN.Easing.Quadratic.InOut)
             .onUpdate(() => {
                 leftShoulder.rotation.set(targetRotationBackward.leftShoulder.x, targetRotationBackward.leftShoulder.y, targetRotationBackward.leftShoulder.z);
@@ -317,11 +299,62 @@ export default class MainCharacter extends EventDispatcher {
     
         tweenForward.start();
     }
+
+
+    goodbye(){
+        const rightShoulder = this.findBoneByName("mixamorigRightShoulder_027");
+        const leftShoulder = this.findBoneByName("mixamorigLeftShoulder_07");
+
+
+        const initialRotation = {
+            leftShoulder: { x: leftShoulder.rotation.x, y: leftShoulder.rotation.y, z: leftShoulder.rotation.z },
+            rightShoulder: { x: rightShoulder.rotation.x, y: rightShoulder.rotation.y, z: rightShoulder.rotation.z },
+        };
+    
+        const targetRotationForward = {
+            leftShoulder: { x: initialRotation.leftShoulder.x + Math.PI * 0.2, y: initialRotation.leftShoulder.y, z: initialRotation.leftShoulder.z },
+            rightShoulder: { x: initialRotation.rightShoulder.x - Math.PI * 0.4, y: initialRotation.rightShoulder.y, z: initialRotation.rightShoulder.z },
+        };
+
+        const tweenForward = new TWEEN.Tween(initialRotation)
+        .to(targetRotationForward, 1200)
+        .easing(TWEEN.Easing.Quadratic.InOut)
+        .onUpdate(() => {
+            leftShoulder.rotation.set(initialRotation.leftShoulder.x, initialRotation.leftShoulder.y, initialRotation.leftShoulder.z);
+            rightShoulder.rotation.set(initialRotation.rightShoulder.x, initialRotation.rightShoulder.y, initialRotation.rightShoulder.z);
+        });
+
+        // const tweenBye = new TWEEN.Tween(targetRotationForward)
+        // .to(targetRotationBye, 1200)
+        // .easing(TWEEN.Easing.Quadratic.InOut)
+        // .onUpdate(() => {
+        //     leftShoulder.rotation.set(initialRotation.leftShoulder.x, initialRotation.leftShoulder.y, initialRotation.leftShoulder.z);
+        //     rightShoulder.rotation.set(initialRotation.rightShoulder.x, initialRotation.rightShoulder.y, initialRotation.rightShoulder.z);
+        // });
+
+
+        console.log("angle test",initialRotation.rightShoulder.z);
+        const tweenBye = new TWEEN.Tween({ rotation: initialRotation.rightShoulder.z})
+        .to({rotation: Math.PI * 0.40  }, 1200)
+        .onUpdate(({ rotation }) => {
+            if (rightShoulder) rightShoulder.rotation.z =  rotation;
+        });
+
+        const tweenByeReverse = new TWEEN.Tween({ rotation: Math.PI * 0.40})
+        .to({rotation: Math.PI * 0.6  }, 1200)
+        .onUpdate(({ rotation }) => {
+            if (rightShoulder) rightShoulder.rotation.z =  rotation;
+        });
+
+
+        // tweenBye.start();
+        tweenForward.chain(tweenBye);
+        tweenBye.chain(tweenByeReverse);
+        tweenByeReverse.chain(tweenBye);
+        tweenForward.start();
     
 
- 
-    
-
+    }
 
     findBoneByName(name) {
         let bone = null;

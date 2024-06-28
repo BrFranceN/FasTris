@@ -12,11 +12,11 @@ const geometry = new TorusGeometry(radius, tube, radialSegments, tubularSegments
 
 // Crea un materiale fisico con il colore giallo e le proprietà riflettenti
 const material = new MeshPhysicalMaterial({
-    color: 0xffff00, // Colore giallo
-    metalness: 0.5,  // Proprietà metallica
-    roughness: 0.1,  // Superficie liscia
-    clearcoat: 1.0,  // Strato di vernice trasparente
-    clearcoatRoughness: 0.1 // Levigatezza dello strato di vernice
+    color: 0xffff00, // colore giallo
+    metalness: 0.5,  // proprietà metallica
+    roughness: 0.1,  // superficie liscia
+    clearcoat: 1.0,  // strato di vernice trasparente
+    clearcoatRoughness: 0.1 // levigatezza dello strato di vernice
 });
 
 export default class SpecialObject{
@@ -25,7 +25,6 @@ export default class SpecialObject{
     constructor(internal_index){
         this.mesh = new Mesh(geometry,material);
         this.internal_index = internal_index;
-        // this.internal_index = internal_index;
     }
 
     getCellIndex(){

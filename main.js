@@ -54,7 +54,7 @@ const effect_time = 10;
 //score of the game
 let score = 0; 
 let time_score = 0;
-const player_choice = choice;
+let player_choice = choice;
 let special_objects = [];
 
 //TEXT 
@@ -70,8 +70,8 @@ fontLoader.load('public/font/helvetiker_regular.typeface.json', function(loadedF
 	text_command2 = "A S D";
 	font = loadedFont;
 	createText(text);
-	createText(text_command,false,-2,1.5,6,0,Math.PI/2,0);
-	createText(text_command2,false,-2,0,7,0,Math.PI/2,0);
+	createText(text_command,false,-2,1.5,6,0,Math.PI/2);
+	createText(text_command2,false,-2,0,7,0,Math.PI/2);
 });
 
 const initial_position = {
@@ -81,9 +81,9 @@ const initial_position = {
 }
 
 //Parameters of square in the ring tris
-const squareSize = 1; // Size of the square
+const squareSize = 1; 
 const squareGeometry = new THREE.PlaneGeometry(squareSize, squareSize);
-const squareMaterial = new THREE.MeshBasicMaterial({ color: 'white', side: THREE.DoubleSide, wireframe:true });
+const squareMaterial = new THREE.MeshBasicMaterial({ color: 'red', side: THREE.DoubleSide, wireframe:true });
 
 const grid_size = {
 	x: 11,
@@ -110,7 +110,7 @@ const tris_array = [48,49,50,
 // Define an O shape 
 const innerRadius = 0.5;
 const outerRadius = 1;
-const segments = 32;
+const segments = 32; // higher segments more polygonal, "smoother" ring
 const geometry_o = new THREE.RingGeometry(innerRadius, outerRadius, segments);
 
 // Create a material
@@ -160,14 +160,6 @@ scene.fog = new THREE.Fog(0x39c09f,20,35);
 
 //BOXES
 const material = new THREE.MeshStandardMaterial({ color: 0x1d5846, wireframe:false });
-// const block_txt = textureLoader.load('/textures/block.jpg');
-// const block_bmp = textureLoader.load('/textures/block_bump.jpg');
-// const material = new THREE.MeshStandardMaterial({
-//   map: block_txt,
-//   bumpMap:block_bmp, 
-//   bumpScale: 0.05,  
-// });
-
 const geometry = new THREE.BoxGeometry(dim_character, dim_character, dim_character);
 const mesh1 = new THREE.Mesh(geometry, material);
 const mesh2 = new THREE.Mesh(geometry, material);
@@ -192,14 +184,6 @@ scene.add(mesh3);
 scene.add(mesh4);
 
 //PLANE
-const terrain_Texture = textureLoader.load('textures/terrain.jpg');
-const terrain_BumpMap = textureLoader.load('textures/terrain_bump.jpg'); 
-
-// const terrainMaterial = new THREE.MeshStandardMaterial({
-//   map: terrain_Texture,
-//   bumpMap:terrain_BumpMap, 
-//   bumpScale: 0.05,  
-// });
 const terrainMaterial = new THREE.MeshStandardMaterial({ color: 0x56f854});
 const terrainGeometry = new THREE.PlaneGeometry(50, 50,50,50);
 const terrain = new THREE.Mesh(terrainGeometry, terrainMaterial);
@@ -209,18 +193,7 @@ terrain.receiveShadow = true;
 scene.add(terrain);
 
 //PLANE TRIS
-
-// const planeMaterial = new THREE.MeshStandardMaterial({ map: terrain_Texture,bumbMap:terrain_BumpMap, bumbScale:0.08});
-const ring_Texture = textureLoader.load('textures/ring.jpg');
-const ring_BumpMap = textureLoader.load('textures/ring_bump.jpg'); 
-
-// const planeMaterial = new THREE.MeshStandardMaterial({
-// 	map: ring_Texture,
-// 	bumpMap:ring_BumpMap, 
-// 	bumpScale: 0.05
-//   });
-
-//cambiare colore ring
+//change color ring?
 const planeMaterial = new THREE.MeshStandardMaterial({ color: 'black', wireframe:true});
 // to create a  x columns 
 const planeGeometry = new THREE.PlaneGeometry(grid_size.x, grid_size.y,grid_size.x,grid_size.y);
@@ -231,9 +204,7 @@ plane.position.x = grid_size.x / 2  - (dim_character/2);
 plane.position.z = grid_size.y / 2 - (dim_character/2);  
 // plane.position.setY(-1);
 scene.add(plane);
-
 plane.receiveShadow = true;
-
 
 
 
@@ -256,10 +227,7 @@ const check_model_loaded = setInterval(() => {
   }
 }, 100);
 
-//actual direction of character
-// let direction = RIGHT;
-// mesh.position.x = grid_size.x / 2 ;
-// mesh.position.z = grid_size.y / 2 ;
+
 
 
 //Camera
@@ -267,13 +235,12 @@ const fov = 60;
 // const fov = 10;//DEBUG
 const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1);
 camera.position.set(14, 6, 14);
-// camera.position.set(grid_size.x/2 + 2, 10 ,grid_size.y/2 + 2);
 // camera.lookAt(new THREE.Vector3(0, 2.5, 0))
 camera.lookAt(new THREE.Vector3(3, 2.5, 3));
 
 //Show the axes of coordinates system
 const axesHelper = new THREE.AxesHelper(3)
-scene.add(axesHelper)
+// scene.add(axesHelper)
 
 // Renderer
 const renderer = new THREE.WebGLRenderer({
@@ -298,11 +265,10 @@ controls.target.set(grid_size.x/2,0,grid_size.y/2); // guardare verso
 // Lights
 const ambientLight = new AmbientLight(0xffffff, 1.5);
 const directionalLight = new DirectionalLight(0xffffff, 3.5);
-directionalLight.position.set(20, 20, 20);
+directionalLight.position.set(14, 20, 14);
 directionalLight.target.position.set(grid_size.x,0,grid_size.y);
 directionalLight.shadow.mapSize.set(1024,1024);
 directionalLight.shadow.radius = 6;
-// directionalLight.shadow.blurSamples = 30;
 directionalLight.shadow.camera.top = 30;
 directionalLight.shadow.camera.bottom = -30;
 directionalLight.shadow.camera.left = -30;
@@ -310,37 +276,24 @@ directionalLight.shadow.camera.right = 30;
 directionalLight.castShadow = true;
 scene.add(ambientLight, directionalLight)
 
-//Clock three js
-// const clock = new THREE.Clock()
 
-//Grid
-const grid = new THREE.Vector2(grid_size.x, grid_size.y);
 
 //Frame loop
 function tic() {
-	// const deltaTime = clock.getDelta() // tempo trascorso dal frame precedente
-
-	// const time = clock.getElapsedTime() //tempo totale trascorso dall'inizio
 	TWEEN.update();
 	controls.update()
-
-	
-
 	mesh1.rotation.x +=0.1;
 	mesh2.rotation.x +=0.1;
 	mesh3.rotation.x +=0.1;
 	mesh4.rotation.x +=0.1;
 
 	// modify position of balls
-
-	
 	
 	for (let i=0; i<special_objects.length; i++){
 
 		special_objects[i].mesh.rotation.y+=0.1;
 
 	}
-	
 	
 	if (salire){
 		mesh1.position.y-=0.03;
@@ -359,10 +312,6 @@ function tic() {
 			salire = true;
 		}
 	}
-
-	
-
-
 	renderer.render(scene, camera)
 
 	requestAnimationFrame(tic)
@@ -380,6 +329,10 @@ window.addEventListener('keyup',function(e){
 
 	//TEST ANIMAZIONE DA CANCELLARE
 	if(e.code == 'KeyT'){
+		// loader.setArm();
+		// loader.animateLegs();
+		// loader.animateArms();
+		// loader.goodbye(); // ONLY FOR PRESENTATION
 		console.log("debug animation:");
 	}
 
@@ -486,12 +439,19 @@ function start_game(){
 					const cell_index = special_objects[so_found_index].getCellIndex();
 					//TODO GESTIRE GLI EFFETTI DEGLI SPECIAL OBJECT
 					let index_effect;
-					if (Math.random() >= 0.5){
+
+
+					// random choice
+					let probability_choice = Math.random();
+					if (probability_choice >= 0.7){
 						index_effect = 1;
-					}else{
+					}else if (probability_choice <0.7 && probability_choice >= 0.3){
 						index_effect = 0;
+					}else{
+						index_effect = 2;
 					}
-					// console.log("effetto -> ",index_effect);
+
+					console.log("effetto -> ",index_effect);
 					special_effect = loader.getStateEffect();
 					// Controllo se non c'e' gia' un effetto settato!
 					if (special_effect==-1){
@@ -510,6 +470,12 @@ function start_game(){
 							console.log("x and z", random_x,random_z);
 							console.log()
 							loader.model.position.set(random_x,0,random_z);
+						}else if (index_effect == 2){
+							if(player_choice == 0){
+								player_choice = 1;
+							}else{
+								player_choice = 0;
+							}
 						}
 					}
 					
@@ -522,22 +488,6 @@ function start_game(){
 					score+=100;
 					updateScore(score);
 				}
-
-		
-
-
-				//check if deactivate or not special effect
-				// check the timer of loader
-				// console.log("come mai non va!",special_effect);
-				// if (special_effect != -1){
-				// 	if (loader.getTimer() > 0){
-				// 		console.log("time remains special effect",loader.getTimer());
-				// 		loader.resetEffect(special_effect);
-				// 	}else{
-				// 		console.log("Time out!!!")
-				// 	}
-				// }
-
 
 		});
 			add_special_object(grid_size,loader);
@@ -583,7 +533,6 @@ function reset_game(){
 }
 
 
-
 function add_special_object(grid_size,loader){
 	let collision;
 	
@@ -618,7 +567,7 @@ function add_special_object(grid_size,loader){
 			
 			
 			special_objects.push(special_object);
-			scene.add(special_object.mesh);
+			scene.add(special_object.mesh);  
 		}
 		
 		
@@ -786,33 +735,7 @@ function checkWin(visualize) {
     return null;
 }
 
-// function update_visual_tris(visualize,mesh_x_original,mesh_o_original){	
-// 	const mesh_x = mesh_x_original.clone();
-// 	const mesh_o = mesh_o_original.clone();
 
-
-// 	let index_init = 0;
-
-// 	for (let i = 0; i < visualize.length; i++) {
-//         for (let j = 0; j < visualize[i].length; j++) {
-// 			if (visualize[i][j] == 'X') {
-// 				const index_cell_x = tris_array[index_init + j];
-// 				const [x_x,z_x] = getCoordByIndex(index_cell_x,grid_size);
-// 				console.log("info X",[x_x,z_x]);
-// 				mesh_x.position.set(x_x,0,z_x);
-// 				scene.add(mesh_x);
-//             } else if (visualize[i][j] == 'O') {
-// 				visualize[i][j] = 'O';
-// 				const index_cell_o = tris_array[index_init + j];
-// 				const [x_o,z_o] = getCoordByIndex(index_cell_o,grid_size);
-// 				console.log("info O",[x_o,z_o]);
-// 				mesh_o.position.set(x_o,0,z_o);
-// 				scene.add(mesh_o);
-//             }
-// 		}
-// 		index_init += 3;
-//     }
-// }
 
 function update_visual_tris(visualize, mesh_x_original, mesh_o_original) {	
     const addedMeshes = {}; // To keep track of added meshes
@@ -849,7 +772,7 @@ function update_visual_tris(visualize, mesh_x_original, mesh_o_original) {
     }
 }
 
-//Add a colorated square on principal plane 
+// add a colorated square on principal plane 
 function addSquare(x, z,squareMaterial,squareGeometry) {
     const square = new THREE.Mesh(squareGeometry, squareMaterial);
     square.rotation.x = -Math.PI / 2; // Rotate to lay flat
@@ -860,7 +783,7 @@ function addSquare(x, z,squareMaterial,squareGeometry) {
 }
 
 
-// Funzione per creare e aggiungere il testo alla scena
+// create and add text
 function createText(text,global=true,x=3,y=0,z=-2.5,x_r=0,y_r=0,z_r=0) {
 	// console.log("creazione testo",font);
     const options = {
@@ -891,7 +814,7 @@ function createText(text,global=true,x=3,y=0,z=-2.5,x_r=0,y_r=0,z_r=0) {
 
 
 
-// Funzione per aggiornare il testo dello score
+// update the score																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																													
 function updateScore(score) {
     let newText = "Score:" + score;
 

@@ -147,7 +147,7 @@ export default class MainCharacter extends EventDispatcher {
 
             this.model.rotation.y += rotation_angle;
 
-            let current_orientation = Math.abs(this.leftRotation) % 4
+            let current_orientation = Math.abs(this.leftRotation) % 4;
 
             if (this.leftRotation > 0){
                 switch(current_orientation) {

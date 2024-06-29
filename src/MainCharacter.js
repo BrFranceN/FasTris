@@ -17,16 +17,6 @@ export default class MainCharacter extends EventDispatcher {
     original_RIGHT = new Vector3(-0.05,0,0);
     original_LEFT = new Vector3(0.05,0,0);
     leftRotation = 0;
-    lleg;
-    rleg;
-    luleg;
-    ruleg;
-    lshoulder;
-    rshoudler;
-    // original_UP = new Vector3(0,0,-1);
-    // original_DOWN = new Vector3(0,0,1);
-    // original_RIGHT = new Vector3(1,0,0);
-    // original_LEFT = new Vector3(-1,0,0);
 
 
     direction =  this.UP;
@@ -140,14 +130,12 @@ export default class MainCharacter extends EventDispatcher {
             case 'ArrowLeft':
             case 'KeyA':
                 rotation_angle = Math.PI / 2;
-                // this.direction = this.LEFT;
                 this.checkEffect();
                 this.updateTime();
                 this.leftRotation += 1
                 break
             case 'ArrowRight':
             case 'KeyD':
-                // this.direction = this.RIGHT;
                 rotation_angle = -Math.PI / 2;
                 this.leftRotation -= 1;
                 this.checkEffect();

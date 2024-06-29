@@ -8,14 +8,25 @@ import TWEEN from '@tweenjs/tween.js';
 export default class MainCharacter extends EventDispatcher {
 
     //Parameters
-    UP = new Vector3(0,0,-1);
-    DOWN = new Vector3(0,0,1);
-    RIGHT = new Vector3(1,0,0);
-    LEFT = new Vector3(-1,0,0);
-    original_UP = new Vector3(0,0,-1);
-    original_DOWN = new Vector3(0,0,1);
-    original_RIGHT = new Vector3(1,0,0);
-    original_LEFT = new Vector3(-1,0,0);
+    UP = new Vector3(0,0,0.05);
+    DOWN = new Vector3(0,0,-0.05);
+    RIGHT = new Vector3(-0.05,0,0);
+    LEFT = new Vector3(0.05,0,0);
+    original_UP = new Vector3(0,0,0.05);
+    original_DOWN = new Vector3(0,0,-0.05);
+    original_RIGHT = new Vector3(-0.05,0,0);
+    original_LEFT = new Vector3(0.05,0,0);
+    leftRotation = 0;
+    lleg;
+    rleg;
+    luleg;
+    ruleg;
+    lshoulder;
+    rshoudler;
+    // original_UP = new Vector3(0,0,-1);
+    // original_DOWN = new Vector3(0,0,1);
+    // original_RIGHT = new Vector3(1,0,0);
+    // original_LEFT = new Vector3(-1,0,0);
 
 
     direction =  this.UP;
@@ -30,6 +41,8 @@ export default class MainCharacter extends EventDispatcher {
         this.url = url;
         this.model = null;
         this.internal_index = null;
+        this.internal_index_floor = null;
+        this.internal_index_upper = null;
         this.modelLoaded = false;
         this.initial_position = initial_position;
         this.grid_size = grid_size;
@@ -47,8 +60,20 @@ export default class MainCharacter extends EventDispatcher {
         let z_i = this.initial_position.init_z;
         this.model.position.set(x_i, y_i, z_i);
         this.internal_index = this.getIndexByCoord(); //set the initial index given by intial position of the body
+        // 0 floor 1 upper
+        this.internal_index_upper = this.getIndexByCoord(0);
+        this.internal_index_floor = this.getIndexByCoord(1);
         console.log("sto qua", this.internal_index);
         this.modelLoaded = true;
+
+
+        this.luleg = this.findBoneByName("mixamorigLeftUpLeg_047");
+        this.ruleg = this.findBoneByName("mixamorigRightUpLeg_052");
+        this.lleg = this.findBoneByName('mixamorigLeftLeg_048');
+        this.rleg = this.findBoneByName('mixamorigRightLeg_053');
+        this.lshoulder = this.findBoneByName("mixamorigLeftShoulder_07");
+        this.rshoudler = this.findBoneByName("mixamorigRightShoulder_027");
+
 
         
         this.model.castShadow = true;
@@ -70,7 +95,9 @@ export default class MainCharacter extends EventDispatcher {
     updatePosition(grid_size){
        
         this.model.position.add(this.direction);
-        this.internal_index = this.getIndexByCoord();
+        // this.internal_index = this.getIndexByCoord();
+        this.internal_index_floor = this.getIndexByCoord(0);
+        this.internal_index_upper = this.getIndexByCoord(1);
 
       
 
@@ -91,44 +118,105 @@ export default class MainCharacter extends EventDispatcher {
 
 
     setDirection(keyCode){
+        
+        let rotation_angle = 0
+        let go_back = false;
         switch (keyCode) {
             case 'ArrowUp':
             case 'KeyW':
                 this.direction = this.UP;
                 this.checkEffect();
                 this.updateTime();
+                rotation_angle = 0
                 break
             case 'ArrowDown':
             case 'KeyS':
                 this.direction = this.DOWN;
                 this.checkEffect();
                 this.updateTime();
+                rotation_angle = 0;
+                go_back = true;
                 break
             case 'ArrowLeft':
             case 'KeyA':
-                this.direction = this.LEFT;
+                rotation_angle = Math.PI / 2;
+                // this.direction = this.LEFT;
                 this.checkEffect();
                 this.updateTime();
+                this.leftRotation += 1
                 break
             case 'ArrowRight':
             case 'KeyD':
-                this.direction = this.RIGHT;
+                // this.direction = this.RIGHT;
+                rotation_angle = -Math.PI / 2;
+                this.leftRotation -= 1;
                 this.checkEffect();
                 this.updateTime();
                 break
             default:
                 return
             }
+
+            this.model.rotation.y += rotation_angle;
+
+            let current_orientation = Math.abs(this.leftRotation) % 4
+
+            if (this.leftRotation > 0){
+                switch(current_orientation) {
+                    case 0 : 
+                        this.direction = this.UP;
+                        break;
+                    case 1 : 
+                        this.direction = this.LEFT;
+                        break;
+                    case 2 : 
+                        this.direction = this.DOWN;
+                        break;
+                    case 3 : 
+                        this.direction = this.RIGHT;
+                        break;
+                }
+            }else{
+                switch(current_orientation) {
+                    case 0 : 
+                        this.direction = this.UP;
+                        break;
+                    case 1 : 
+                        this.direction = this.RIGHT;
+                        break;
+                    case 2 : 
+                        this.direction = this.DOWN;
+                        break;
+                    case 3 : 
+                        this.direction = this.LEFT;
+                        break;
+                }
+            }
+            // }
     }
 
-    getIndexByCoord(){
-        let z_coordinate = this.model.position.z;
-        let x_coordinate = this.model.position.x;
-        return z_coordinate * this.grid_size.x + x_coordinate;
+    getIndexByCoord(type=0){
+        if (type == 0){
+            let z_coordinate = Math.floor(this.model.position.z);
+            let x_coordinate = Math.floor(this.model.position.x);
+            console.log("sto qua nella funzione type floor x",x_coordinate);
+            console.log("sto qua nella funzione type floor z",z_coordinate);
+            return z_coordinate * this.grid_size.x + x_coordinate;
+        }else{
+            let z_coordinate = Math.ceil(this.model.position.z);
+            let x_coordinate = Math.ceil(this.model.position.x);
+            console.log("sto qua nella funzione type upper x:",x_coordinate);
+            console.log("sto qua nella funzione type upper z:",z_coordinate);
+            return z_coordinate * this.grid_size.x + x_coordinate;
+        }
     }
 
-    getInteralIndex(){
-        return this.internal_index;
+    getInteralIndex(type=0){
+        if (type == 0){
+            return this.internal_index_floor;
+        }else{
+            return this.internal_index_upper;
+        }
     }
 
 
@@ -141,10 +229,11 @@ export default class MainCharacter extends EventDispatcher {
     
     
     skipControl(){
-        this.UP = new Vector3(0,0,-2);
-        this.DOWN = new Vector3(0,0,2);
-        this.RIGHT = new Vector3(2,0,0);
-        this.LEFT = new Vector3(-2,0,0);
+
+        this.UP = new Vector3(0,0,0.20);
+        this.DOWN = new Vector3(0,0,-0.20);
+        this.RIGHT = new Vector3(-0.20,0,0);
+        this.LEFT = new Vector3(0.20,0,0);
         this.timer=3;
     }
 
@@ -198,7 +287,7 @@ export default class MainCharacter extends EventDispatcher {
 
 
         const tweenBackward = new TWEEN.Tween(targetRotationRight)
-        .to(targetRotationBack, 800)
+        .to(targetRotationBack, 400)
         .easing(TWEEN.Easing.Quadratic.InOut)
         .onUpdate(() => {
             leftUpLeg.rotation.set(targetRotationRight.leftUpLeg.x, targetRotationRight.leftUpLeg.y, targetRotationRight.leftUpLeg.z);
@@ -208,7 +297,7 @@ export default class MainCharacter extends EventDispatcher {
 
 
         const tweenForwardLeft = new TWEEN.Tween({ rotation: 0  })
-        .to({ rotation: Math.PI / 6 }, 800)
+        .to({ rotation: Math.PI / 6 }, 400)
         .onUpdate(({ rotation }) => {
             if (leftUpLeg) leftUpLeg.rotation.x = -rotation;
             if (rightUpLeg) rightUpLeg.rotation.x = rotation;
@@ -217,7 +306,7 @@ export default class MainCharacter extends EventDispatcher {
 
         //piede destro in avanti
         const tweenForwardRight = new TWEEN.Tween({ rotation: 0  })
-        .to({ rotation: Math.PI / 6 }, 800)
+        .to({ rotation: Math.PI / 6 }, 400)
         .onUpdate(({ rotation }) => {
             if (leftUpLeg) leftUpLeg.rotation.x = rotation;
             if (rightUpLeg) rightUpLeg.rotation.x = -rotation;
@@ -238,7 +327,7 @@ export default class MainCharacter extends EventDispatcher {
         const leftArm = this.findBoneByName("mixamorigLeftArm_08");
 
         const setArm = new TWEEN.Tween({ rotation: 0})
-        .to({rotation:Math.PI * 0.2 }, 800)
+        .to({rotation:Math.PI * 0.2 }, 400)
         .onUpdate(({ rotation }) => {
             if (rightArm) rightArm.rotation.x= rotation;
             if (leftArm) leftArm.rotation.x =  rotation;
@@ -247,6 +336,8 @@ export default class MainCharacter extends EventDispatcher {
         setArm.start();
 
     }
+
+
 
 
     animateArms() {
@@ -269,7 +360,7 @@ export default class MainCharacter extends EventDispatcher {
         };
     
         const tweenForward = new TWEEN.Tween(initialRotation)
-            .to(targetRotationForward, 1200)
+            .to(targetRotationForward, 400)
             .easing(TWEEN.Easing.Quadratic.InOut)
             .onUpdate(() => {
                 leftShoulder.rotation.set(initialRotation.leftShoulder.x, initialRotation.leftShoulder.y, initialRotation.leftShoulder.z);
@@ -277,7 +368,7 @@ export default class MainCharacter extends EventDispatcher {
             });
     
         const tweenBackward = new TWEEN.Tween(targetRotationForward)
-            .to(targetRotationBackward, 1200)
+            .to(targetRotationBackward, 400)
             .easing(TWEEN.Easing.Quadratic.InOut)
             .onUpdate(() => {
                 leftShoulder.rotation.set(targetRotationForward.leftShoulder.x, targetRotationForward.leftShoulder.y, targetRotationForward.leftShoulder.z);
@@ -285,7 +376,7 @@ export default class MainCharacter extends EventDispatcher {
             });
     
         const tweenReturn = new TWEEN.Tween(targetRotationBackward)
-            .to(initialRotation, 1200)
+            .to(initialRotation, 400)
             .easing(TWEEN.Easing.Quadratic.InOut)
             .onUpdate(() => {
                 leftShoulder.rotation.set(targetRotationBackward.leftShoulder.x, targetRotationBackward.leftShoulder.y, targetRotationBackward.leftShoulder.z);
@@ -412,6 +503,8 @@ export default class MainCharacter extends EventDispatcher {
         this.timer = -1;
         this.originalControl();
         this.internal_index = this.getIndexByCoord(); 
+        this.internal_index_floor = this.getIndexByCoord(0); 
+        this.internal_index_upper = this.getIndexByCoord(1); 
     }
 
 

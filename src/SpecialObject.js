@@ -10,7 +10,7 @@ const geometry = new TorusGeometry(radius, tube, radialSegments, tubularSegments
 // const material = new MeshStandardMaterial({ color: 0xe0dd12, wireframe:false });
 
 
-// Crea un materiale fisico con il colore giallo e le proprietà riflettenti
+
 const material = new MeshPhysicalMaterial({
     color: 0xffff00, // colore giallo
     metalness: 0.5,  // proprietà metallica
@@ -30,7 +30,5 @@ export default class SpecialObject{
     getCellIndex(){
         return this.internal_index;
     }
-
-
 
 }

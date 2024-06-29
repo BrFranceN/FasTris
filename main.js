@@ -148,7 +148,7 @@ const mesh_x = createXShape();
 mesh_x.rotation.x += Math.PI/2;
 mesh_x.scale.set(0.5, 0.5, 0.5);
 
-// Add the "X" shape to the scene
+
 //SCENE
 const scene = new THREE.Scene()
 scene.background = new THREE.Color(0x39c09f)
@@ -159,6 +159,13 @@ scene.fog = new THREE.Fog(0x39c09f,20,35);
 
 
 //BOXES
+// const block_txt = textureLoader.load('/textures/block.jpg');
+// const block_bmp = textureLoader.load('/textures/block_bump.jpg');
+// const material = new THREE.MeshStandardMaterial({
+//   map: block_txt,
+//   bumpMap:block_bmp, 
+//   bumpScale: 0.05,  
+// });
 const material = new THREE.MeshStandardMaterial({ color: 0x1d5846, wireframe:false });
 const geometry = new THREE.BoxGeometry(dim_character, dim_character, dim_character);
 const mesh1 = new THREE.Mesh(geometry, material);
@@ -184,6 +191,13 @@ scene.add(mesh3);
 scene.add(mesh4);
 
 //PLANE
+// const terrain_Texture = textureLoader.load('textures/terrain.jpg');
+// const terrain_BumpMap = textureLoader.load('textures/terrain_bump.jpg'); 
+// const terrainMaterial = new THREE.MeshStandardMaterial({
+//   map: terrain_Texture,
+//   bumpMap:terrain_BumpMap, 
+//   bumpScale: 0.05,  
+// });
 const terrainMaterial = new THREE.MeshStandardMaterial({ color: 0x56f854});
 const terrainGeometry = new THREE.PlaneGeometry(50, 50,50,50);
 const terrain = new THREE.Mesh(terrainGeometry, terrainMaterial);
@@ -219,13 +233,13 @@ for (let i=0; i<tris_array.length; i++){
 const model_path = '3d_models/tyrone_mixamo/scene.gltf';
 const loader = new MainCharacter(model_path,grid_size,initial_position);
 
-// Add the model to the scene when it is loaded
+// add the model to the scene when it is loaded -> tyhanks to this the life is better
 const check_model_loaded = setInterval(() => {
   if (loader.modelLoaded) {
     scene.add(loader.model);
     clearInterval(check_model_loaded);
   }
-}, 100);
+}, 200);
 
 
 
@@ -233,10 +247,11 @@ const check_model_loaded = setInterval(() => {
 //Camera
 const fov = 60; 
 // const fov = 10;//DEBUG
-const camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1);
-camera.position.set(14, 6, 14);
+let camera = new THREE.PerspectiveCamera(fov, sizes.width / sizes.height, 0.1);
+// camera.position.set(14, 6, 14);
+camera.position.set(grid_size.x/2, 5, grid_size.y/2);
 // camera.lookAt(new THREE.Vector3(0, 2.5, 0))
-camera.lookAt(new THREE.Vector3(3, 2.5, 3));
+// camera.lookAt(new THREE.Vector3(3, 2.5, 3));
 
 //Show the axes of coordinates system
 const axesHelper = new THREE.AxesHelper(3)
@@ -258,8 +273,8 @@ handleResize()
 // OrbitControls
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
-controls.target.set(grid_size.x/2,0,grid_size.y/2); // guardare verso
-// controls.target.set(0,0,0); // guardare verso DEBUG
+// controls.target.set(grid_size.x/2,0,grid_size.y/2); // guardare verso
+controls.target.set(0,0,0); // guardare verso DEBUG
 
 
 // Lights
@@ -342,6 +357,7 @@ window.addEventListener('keyup',function(e){
 			loader.setArm();
 			loader.animateLegs();
 			loader.animateArms();
+			animateCamera();
 			// isRunning = true; DEBUG
 			// console.log('Partenza gioco:',isRunning);
 		}
@@ -354,8 +370,10 @@ window.addEventListener('keyup',function(e){
 		}
 	}
 	else if(e.code == 'Space' && isRunning){
-		const character_ind = loader.getInteralIndex();		
-		const tris_found_index = tris_array.findIndex(tris_index => tris_index == character_ind);
+		// const character_ind = loader.getInteralIndex();		
+		const character_ind_floor = loader.getInteralIndex(0);		
+		const character_ind_upper = loader.getInteralIndex(1);		
+		const tris_found_index = tris_array.findIndex(tris_index => (tris_index == character_ind_floor) || (tris_index == character_ind_upper));
 		if (tris_found_index >=0){
 			const cell_index = tris_array[tris_found_index];
 
@@ -429,12 +447,28 @@ window.addEventListener('keyup',function(e){
 function start_game(){
 	if(!isRunning){ //if the game is not already started
 		interval = setInterval( () => {
+			console.log("floor index char",loader.getIndexByCoord(0));
+			console.log("upper index char",loader.getIndexByCoord(1));
 			loader.updatePosition(grid_size);
 			loader.addEventListener('updated', () => {
 
-				const character_ind = loader.getInteralIndex();
-				//SPECIAL OBJECT DETECTION
-				const so_found_index = special_objects.findIndex(element => element.getCellIndex() == character_ind);
+				// const character_ind = loader.getInteralIndex(); legacy code
+				const character_ind_floor = loader.getInteralIndex(0);		
+				const character_ind_upper = loader.getInteralIndex(1);
+				
+				
+				//SPECIAL OBJECT COLLISION DETECTION
+				// in teoria non dovrebbero essere 2
+
+				console.log("floor -> character_ind_floor",character_ind_floor);
+				console.log("upper -> character_ind_upper",character_ind_upper);
+				special_objects.forEach(element => console.log(element.getCellIndex()))
+
+				const so_found_index = special_objects.findIndex(element => (
+					( (element.getCellIndex() == character_ind_floor) || (element.getCellIndex() == character_ind_upper))))
+				
+				console.log("so found index is:",so_found_index);
+											
 				if (so_found_index >=0){
 					const cell_index = special_objects[so_found_index].getCellIndex();
 					//TODO GESTIRE GLI EFFETTI DEGLI SPECIAL OBJECT
@@ -491,7 +525,7 @@ function start_game(){
 
 		});
 			add_special_object(grid_size,loader);
-		},400);
+		},100);
 		isRunning=true;
 	}
 }
@@ -848,6 +882,22 @@ function removeMeshxo(){
 	meshxo = [];
 }
 
+
+function animateCamera() {
+	const targetPosition = { x: 14, y: 5, z: 14 }; 
+	const initialPosition = { x: grid_size/2, y: 5, z: grid_size/2 }; 
+
+	
+	new TWEEN.Tween(initialPosition)
+	  .to(targetPosition, 2000) // Durata dell'animazione in millisecondi
+	  .easing(TWEEN.Easing.Quadratic.InOut)
+	  .onUpdate(() => {
+		camera.position.set(initialPosition.x, initialPosition.y, initialPosition.z);
+		camera.lookAt(new THREE.Vector3(3, 2.5, 3));
+
+	  })
+	  .start();
+  }
 
 
 

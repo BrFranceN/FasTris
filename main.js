@@ -348,7 +348,11 @@ window.addEventListener('keyup',function(e){
 		// loader.animateLegs();
 		// loader.animateArms();
 		// loader.goodbye(); // ONLY FOR PRESENTATION
-		console.log("debug animation:");
+		//console.log("debug animation:");
+		console.log("floor ---->",loader.getIndexByCoord(0));
+		console.log("ceil ---->",loader.getIndexByCoord(1));
+		console.log("position x", loader.model.position.x);
+		console.log("position z", loader.model.position.z);
 	}
 
 	if(e.code == 'KeyG'){
@@ -423,14 +427,14 @@ window.addEventListener('keyup',function(e){
 
 			if (winner) {
 				time_score = loader.getTimeScore();
-				console.log(`The winner is: ${winner}`);
+				//console.log(`The winner is: ${winner}`);
 				localStorage.setItem('score', score);
 				localStorage.setItem('moves',time_score);
 				localStorage.setItem('winner',winner);
 				localStorage.setItem('initialChoice',player_choice);
 				window.location.href = "results.html";
 			} else {
-				console.log('No winner yet.');
+				//console.log('No winner yet.');
 			}
 		}
 	}
@@ -447,8 +451,8 @@ window.addEventListener('keyup',function(e){
 function start_game(){
 	if(!isRunning){ //if the game is not already started
 		interval = setInterval( () => {
-			console.log("floor index char",loader.getIndexByCoord(0));
-			console.log("upper index char",loader.getIndexByCoord(1));
+			// console.log("floor index char",loader.getIndexByCoord(0));
+			// console.log("upper index char",loader.getIndexByCoord(1));
 			loader.updatePosition(grid_size);
 			loader.addEventListener('updated', () => {
 
@@ -460,14 +464,14 @@ function start_game(){
 				//SPECIAL OBJECT COLLISION DETECTION
 				// in teoria non dovrebbero essere 2
 
-				console.log("floor -> character_ind_floor",character_ind_floor);
-				console.log("upper -> character_ind_upper",character_ind_upper);
-				special_objects.forEach(element => console.log(element.getCellIndex()))
+				// console.log("floor -> character_ind_floor",character_ind_floor);
+				// console.log("upper -> character_ind_upper",character_ind_upper);
+				// special_objects.forEach(element => console.log(element.getCellIndex()))
 
 				const so_found_index = special_objects.findIndex(element => (
 					( (element.getCellIndex() == character_ind_floor) || (element.getCellIndex() == character_ind_upper))))
 				
-				console.log("so found index is:",so_found_index);
+				// console.log("so found index is:",so_found_index);
 											
 				if (so_found_index >=0){
 					const cell_index = special_objects[so_found_index].getCellIndex();
@@ -485,7 +489,7 @@ function start_game(){
 						index_effect = 2;
 					}
 
-					console.log("effetto -> ",index_effect);
+					//console.log("effetto -> ",index_effect);
 					special_effect = loader.getStateEffect();
 					// Controllo se non c'e' gia' un effetto settato!
 					if (special_effect==-1){
@@ -499,10 +503,10 @@ function start_game(){
 							//teleporter effect
 							// console.log("attivazione effetto 2");
 							let indx = Math.floor(Math.random() * (grid_size.x*grid_size.y));
-							console.log("indice ",indx);
+							//console.log("indice ",indx);
 							let [random_x,random_z] = getCoordByIndex(indx,grid_size);
-							console.log("x and z", random_x,random_z);
-							console.log()
+							//console.log("x and z", random_x,random_z);
+							//console.log()
 							loader.model.position.set(random_x,0,random_z);
 						}else if (index_effect == 2){
 							if(player_choice == 0){
@@ -515,7 +519,7 @@ function start_game(){
 					
 					info_grid[cell_index] = 0;
 					// console.log("array of so",special_objects);
-					console.log("remove a special object from scene");
+					//console.log("remove a special object from scene");
 					scene.remove(special_objects[so_found_index].mesh);
 					special_objects.splice(so_found_index,1);
 					//Add score
@@ -542,11 +546,11 @@ function reset_game(){
 	isRunning=false;
 	//reset the info of the grid
 	info_grid = createInfo(grid_size.x, grid_size.y,tris_array);
-	console.log("info grid: ", info_grid);
+	// console.log("info grid: ", info_grid);
 
 	//remove all objects from the scene
 	for (let i = 0; i < special_objects.length; i++) {
-		console.log("sto rimuovendo", special_objects[i]);
+		//console.log("sto rimuovendo", special_objects[i]);
 		scene.remove(special_objects[i].mesh);
 	}
 	
@@ -577,7 +581,7 @@ function add_special_object(grid_size,loader){
 			do{
 				random_index = Math.floor(Math.random() * grid_size.x *grid_size.y);
 				collision = loader.check_collision(random_index);
-				// console.log("collision:", collision);
+				// //console.log("collision:", collision);
 			}while(loader.check_collision(random_index) || info_grid[random_index]!=0);
 			
 			//I want generate an object in a cell != character cell
@@ -587,7 +591,7 @@ function add_special_object(grid_size,loader){
 			special_object.mesh.receiveShadow = true;
 			info_grid[random_index] = 1;
 			
-			// console.log("n_so", countObjectType(info_grid,1));
+			// //console.log("n_so", countObjectType(info_grid,1));
 
 			
 		
@@ -597,7 +601,7 @@ function add_special_object(grid_size,loader){
 			//generate a random number [0, grid_size - 1]
 			special_object.mesh.position.x = random_index % grid_size.x;
 			special_object.mesh.position.z = Math.floor(random_index / grid_size.y);
-			// console.log("so -> ",special_object.getCellIndex())
+			// //console.log("so -> ",special_object.getCellIndex())
 			
 			
 			special_objects.push(special_object);
@@ -607,7 +611,7 @@ function add_special_object(grid_size,loader){
 		
 		//TEST : OK
 		// const [x_test,z_test] = getCoordByIndex(random_index,grid_size);
-		// console.log("random index =", random_index );
+		// //console.log("random index =", random_index );
 		// console.log("x =", special_object.mesh.position.x );
 		// console.log("z =", special_object.mesh.position.z );
 		// console.log("x_test =", x_test);
@@ -738,10 +742,10 @@ function visualize_tris(){
 function checkWin(visualize) {
     // Check rows
 
-	console.log("visualize",visualize);
+	//console.log("visualize",visualize);
     for (let i = 0; i < 3; i++) {
         if (visualize[i][0] === visualize[i][1] && visualize[i][1] === visualize[i][2] && visualize[i][0] !== ' ') {
-			console.log("righe")
+			//console.log("righe")
             return visualize[i][0]; // Return 'X' or 'O'
         }
     }
@@ -749,18 +753,18 @@ function checkWin(visualize) {
     // Check columns
     for (let i = 0; i < 3; i++) {
         if (visualize[0][i] === visualize[1][i] && visualize[1][i] === visualize[2][i] && visualize[0][i] !== ' ') {
-			console.log("colonne")
+			//console.log("colonne")
             return visualize[0][i]; // Return 'X' or 'O'
         }
     }
 
     // Check diagonals
     if (visualize[0][0] === visualize[1][1] && visualize[1][1] === visualize[2][2] && visualize[0][0] !== ' ') {
-		console.log("diagonale principale");
+		//console.log("diagonale principale");
         return visualize[0][0]; // Return 'X' or 'O'
     }
     if (visualize[0][2] === visualize[1][1] && visualize[1][1] === visualize[2][0] && visualize[0][2] !== ' ') {
-		console.log("diagonale secondaria");
+		//console.log("diagonale secondaria");
         return visualize[0][2]; // Return 'X' or 'O'
     }
 
@@ -865,7 +869,7 @@ function checkFullGrid(visualize){
 	for (let i = 0; i < visualize.length; i++) {
         for (let j = 0; j < visualize[i].length; j++) {
             if (visualize[i][j] == ' '){
-				console.log("ancora spaziooooooo!");
+				//console.log("ancora spaziooooooo!");
 				full = false;
 			}
     	}

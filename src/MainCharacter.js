@@ -12,6 +12,10 @@ export default class MainCharacter extends EventDispatcher {
     DOWN = new Vector3(0,0,-0.05);
     RIGHT = new Vector3(-0.05,0,0);
     LEFT = new Vector3(0.05,0,0);
+
+ 
+
+    
     original_UP = new Vector3(0,0,0.05);
     original_DOWN = new Vector3(0,0,-0.05);
     original_RIGHT = new Vector3(-0.05,0,0);
@@ -53,7 +57,7 @@ export default class MainCharacter extends EventDispatcher {
         // 0 floor 1 upper
         this.internal_index_upper = this.getIndexByCoord(0);
         this.internal_index_floor = this.getIndexByCoord(1);
-        console.log("sto qua", this.internal_index);
+        //console.log("sto qua", this.internal_index);
         this.modelLoaded = true;
 
 
@@ -68,17 +72,17 @@ export default class MainCharacter extends EventDispatcher {
         
         this.model.castShadow = true;
         this.model.receiveShadow = true;
-        console.log('Model loaded:', this.model);
+        //console.log('Model loaded:', this.model);
 
         // Traverse and log all node names
         this.model.traverse((node) => {
-            console.log(node.name);
+            //console.log(node.name);
         });
 
 
 
         }, undefined, (error) => {
-        console.error(error);
+        //console.error(error);
         });
     }
 
@@ -129,14 +133,14 @@ export default class MainCharacter extends EventDispatcher {
                 break
             case 'ArrowLeft':
             case 'KeyA':
-                rotation_angle = Math.PI / 2;
+                rotation_angle = -Math.PI / 2;
                 this.checkEffect();
                 this.updateTime();
                 this.leftRotation += 1
                 break
             case 'ArrowRight':
             case 'KeyD':
-                rotation_angle = -Math.PI / 2;
+                rotation_angle = Math.PI / 2;
                 this.leftRotation -= 1;
                 this.checkEffect();
                 this.updateTime();
@@ -149,7 +153,7 @@ export default class MainCharacter extends EventDispatcher {
 
             let current_orientation = Math.abs(this.leftRotation) % 4;
 
-            if (this.leftRotation > 0){
+            if (this.leftRotation < 0){
                 switch(current_orientation) {
                     case 0 : 
                         this.direction = this.UP;
@@ -187,14 +191,14 @@ export default class MainCharacter extends EventDispatcher {
         if (type == 0){
             let z_coordinate = Math.floor(this.model.position.z);
             let x_coordinate = Math.floor(this.model.position.x);
-            console.log("sto qua nella funzione type floor x",x_coordinate);
-            console.log("sto qua nella funzione type floor z",z_coordinate);
+            //console.log("sto qua nella funzione type floor x",x_coordinate);
+            //console.log("sto qua nella funzione type floor z",z_coordinate);
             return z_coordinate * this.grid_size.x + x_coordinate;
         }else{
             let z_coordinate = Math.ceil(this.model.position.z);
             let x_coordinate = Math.ceil(this.model.position.x);
-            console.log("sto qua nella funzione type upper x:",x_coordinate);
-            console.log("sto qua nella funzione type upper z:",z_coordinate);
+            //console.log("sto qua nella funzione type upper x:",x_coordinate);
+            //console.log("sto qua nella funzione type upper z:",z_coordinate);
             return z_coordinate * this.grid_size.x + x_coordinate;
         }
     }
@@ -237,13 +241,13 @@ export default class MainCharacter extends EventDispatcher {
 
     checkEffect(){
         if (this.special_effect!=-1){
-            console.log("effetto attivo",this.special_effect);
-            console.log("tempo rimanente",this.timer);
+            //console.log("effetto attivo",this.special_effect);
+            //console.log("tempo rimanente",this.timer);
             this.timer-=1;
             if (this.timer == 0){
-                console.log("tempo scaduto");
+                //console.log("tempo scaduto");
                 if (this.special_effect == 0){
-                    console.log("skip controll disattivato");
+                    //console.log("skip controll disattivato");
                     this.originalControl();
                 }
         
@@ -412,7 +416,7 @@ export default class MainCharacter extends EventDispatcher {
         // });
 
 
-        console.log("angle test",initialRotation.rightShoulder.z);
+        //console.log("angle test",initialRotation.rightShoulder.z);
         const tweenBye = new TWEEN.Tween({ rotation: initialRotation.rightShoulder.z})
         .to({rotation: Math.PI * 0.40  }, 1200)
         .onUpdate(({ rotation }) => {
@@ -446,34 +450,34 @@ export default class MainCharacter extends EventDispatcher {
     }
 
     resetEffect(number_effect){
-        console.log("timer attuale",this.timer);
-        console.log("reset",number_effect);
+        //console.log("timer attuale",this.timer);
+        //console.log("reset",number_effect);
 
         if(this.timer >=0){
-            console.log("timer",this.timer);
+            //console.log("timer",this.timer);
             this.timer-=1;
         }
         if (number_effect == 1){
-            console.log("original control");
+            //console.log("original control");
             this.originalControl();
         }
     }
 
 
     getTimer(){
-        console.log('timer rimanente',this.timer);
+        //console.log('timer rimanente',this.timer);
         return this.timer;
     }
     getStateEffect(){
         return this.special_effect;
     }
     getTimeScore(){
-        console.log("time score get:",this.time_score);
+        //console.log("time score get:",this.time_score);
         return this.time_score;
     }
 
     setStateEffect(number_effect){
-        console.log("sto settando l'effetto", number_effect);
+        //console.log("sto settando l'effetto", number_effect);
         this.special_effect = number_effect;
         this.timer = 3;
     }

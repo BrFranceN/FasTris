@@ -336,8 +336,6 @@ requestAnimationFrame(tic)
 
 
 
-
-
 // PHASE GAME
 window.addEventListener('keyup',function(e){
 	loader.setDirection(e.code);
